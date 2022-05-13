@@ -10,3 +10,12 @@ setup-env:
 
 setup-local: get-pyglue-libs pip-install setup-env
 	echo 'Local setup done'
+
+docker-build:
+	docker build -t glue .
+
+run-api-example: 
+	docker run -v "$$(pwd)/src:/src" -w /src -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_DEFAULT_REGION glue glue_api_example.py
+
+test: 
+	docker run -v "$$(pwd)/src:/src" -w /src --entrypoint pytest glue 

@@ -1,16 +1,15 @@
 ### Setup for local development (installing dependencies for IDE highlighting)
 
-1. Clone Repo
 1. Install Python 3.7
    - Newer versions of Python 3 will probably work, but won't match the PyGlue
-1. Download [PyGlue.zip](https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-1.0/python/PyGlue.zip)
-   - Documentation around this can be found [here](https://docs.aws.amazon.com/glue/latest/dg/dev-endpoint-tutorial-pycharm.html)
-   - Put this zip in the project directory after cloning locally
-1. Install dependencies `pip install -r requirements.txt`
-1. (If using VSCode) Create `.env` in the project directory
-   - Add a line adding the PyGlue.zip file to your PYTHONPATH environment variable. e.g. `PYTHONPATH=".:/Users/bskiff/projects/python-stuff/GlueTest/PyGlue.zip"`
+1. Run:
+
+```bash
+make setup-local
+```
 
 ### Running tests
 
 1. Install Docker
-1. Run `docker build -t glue . && docker run -it glue`
+1. Run `make docker-build` (doesn't need to be rerun each time)
+1. Run `make test`
