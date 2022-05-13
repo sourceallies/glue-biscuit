@@ -7,9 +7,30 @@ Resources:
   Database:
     Type: AWS::Glue::Database
     Properties: 
-      DatabaseInput: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
         Description: Defines the glue reference datasets
         Name: glue_reference
+
+  OutputTable:
+    Type: AWS::Glue::Table
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref Database
+      TableInput: 
+        Name: output
+        Description: Stores output dataset
+        StorageDescriptor:
+          Location: !Sub "s3://${DataBucket}/output"
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          Parameters:
+            classification: parquet
+          Columns:
+            - Name: id
+              Type: string
 
   # GlueJobRole:
   #   Type: AWS::IAM::Role
