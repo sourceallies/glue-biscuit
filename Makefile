@@ -10,3 +10,9 @@ setup-env:
 
 setup-local: get-pyglue-libs pip-install setup-env
 	echo 'Local setup done'
+
+lint:
+	flake8 ./src
+
+format:
+	black ./src
