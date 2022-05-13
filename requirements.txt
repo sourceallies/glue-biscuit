@@ -7,4 +7,5 @@ py4j==0.10.9.3
 pyparsing==3.0.9
 pyspark==3.2.1
 pytest==7.1.2
+pytest-mock==3.7.0
 tomli==2.0.1
