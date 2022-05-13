@@ -1,8 +1,9 @@
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
-from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql.functions import col
+
 from pyspark.context import SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
 # spark
 sc = SparkContext.getOrCreate()
@@ -11,8 +12,12 @@ spark = SparkSession(sc)
 # glue
 gc = GlueContext(sc)
 
-def glue_dynamic_frame_crossjoin_demo(dyf1: DynamicFrame, dyf2: DynamicFrame) -> DynamicFrame:
+
+def glue_dynamic_frame_crossjoin_demo(
+    dyf1: DynamicFrame, dyf2: DynamicFrame
+) -> DynamicFrame:
     return dyf1.join(["a", "b"], ["c", "d"], dyf2)
+
 
 def glue_data_frame_demo(dyf1: DynamicFrame, dyf2: DynamicFrame) -> DynamicFrame:
     df1 = dyf1.toDF()
