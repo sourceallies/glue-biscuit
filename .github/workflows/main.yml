@@ -1,0 +1,28 @@
+name: Main Pipeline
+on: 
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  deploy-aws:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: aws-actions/setup-sam@v1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: "arn:aws:iam::144406111952:role/Deployer"
+          role-session-name: DeployToDevSandbox
+
+      - name: Deploy
+        run: sam deploy
