@@ -3,7 +3,6 @@ from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from pyspark.sql import DataFrame, Row, SparkSession
 from pyspark.context import SparkContext
-from pytest_mock import MockerFixture
 from unittest.mock import patch
 
 # application imports
