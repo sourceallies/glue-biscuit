@@ -14,3 +14,10 @@
 
 1. Install Docker
 1. Run `docker build -t glue . && docker run -it glue`
+
+### Linting and formatting
+
+```bash
+make lint # checks linting and styles
+make format # fixes style rule violations
+```
