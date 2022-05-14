@@ -34,8 +34,20 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: ../..
+          push: false
+          tags: glue-ref-impl-tests:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
       - name: Run unit tests
-        uses: ./.github/actions/unit-tests
+        uses: "glue-ref-impl-tests:latest"
+
+        # uses: ./.github/actions/unit-tests
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
