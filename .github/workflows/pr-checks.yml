@@ -8,15 +8,17 @@ jobs:
   verify:
     name: Verify Code
     runs-on: ubuntu-20.04
+    container:
+      image: amazon/aws-glue-libs:glue_libs_3.0.0_image_01
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Install Python3
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.7"
-          cache: "pip"
+      #   - name: Install Python3
+      #     uses: actions/setup-python@v3
+      #     with:
+      #       python-version: "3.7"
+      #       cache: "pip"
 
       - name: Install dependencies
         run: make pip-install
@@ -24,31 +26,34 @@ jobs:
       - name: Lint
         run: make lint
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      # So now you can use Actions' own caching!
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+      - name: Unit tests
+        run: pytest
 
-      - name: Build Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: ../..
-          push: false
-          tags: glue-ref-impl-tests:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+    #   - name: Set up Docker Buildx
+    #     uses: docker/setup-buildx-action@v1
+    #   # So now you can use Actions' own caching!
+    #   - name: Cache Docker layers
+    #     uses: actions/cache@v2
+    #     with:
+    #       path: /tmp/.buildx-cache
+    #       key: ${{ runner.os }}-buildx-${{ github.sha }}
+    #       restore-keys: |
+    #         ${{ runner.os }}-buildx-
 
-      - name: Run unit tests
-        uses: "docker://glue-ref-impl-tests:latest"
+    #   - name: Build Docker Image
+    #     uses: docker/build-push-action@v2
+    #     with:
+    #       context: ../..
+    #       push: false
+    #       tags: glue-ref-impl-tests:latest
+    #       cache-from: type=local,src=/tmp/.buildx-cache
+    #       cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-        # uses: ./.github/actions/unit-tests
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+    #   - name: Run unit tests
+    #     uses: "docker://glue-ref-impl-tests:latest"
+
+    #     # uses: ./.github/actions/unit-tests
+    #   - name: Move cache
+    #     run: |
+    #       rm -rf /tmp/.buildx-cache
+    #       mv /tmp/.buildx-cache-new /tmp/.buildx-cache
