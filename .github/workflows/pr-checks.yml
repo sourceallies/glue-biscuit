@@ -45,7 +45,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
       - name: Run unit tests
-        uses: "glue-ref-impl-tests:latest"
+        uses: "docker://glue-ref-impl-tests:latest"
 
         # uses: ./.github/actions/unit-tests
       - name: Move cache
