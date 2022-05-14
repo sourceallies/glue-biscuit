@@ -37,11 +37,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
       - name: Run unit tests
-          uses: "docker"
-          with:
-            image: "../../Dockerfile"
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache-new
+        uses: "docker"
+        with:
+          image: "../../Dockerfile"
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
