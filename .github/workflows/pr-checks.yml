@@ -22,4 +22,7 @@ jobs:
       - name: Lint
         run: make lint
 
-      - uses: ./.github/actions/unit-tests
+      - name: Run unit tests
+        run:
+          using: "docker"
+          image: "../../../Dockerfile"
