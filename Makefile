@@ -29,5 +29,8 @@ lint:
 format:
 	black ./src
 
+docker-build:
+	docker build -t glue .
+
 test:
 	docker run -v "$$(pwd)/src:/src" -w /src --entrypoint pytest glue
