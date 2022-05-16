@@ -1,8 +1,6 @@
 name: PR Checks
 on:
-  push:
-    branches-ignore:
-      - main
+  pull_request:
 
 jobs:
   verify:
