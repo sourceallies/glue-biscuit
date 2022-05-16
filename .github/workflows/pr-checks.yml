@@ -23,4 +23,4 @@ jobs:
         run: make lint
 
       - name: Run unit tests
-        run: make build && make test
+        run: make docker-build && make test
