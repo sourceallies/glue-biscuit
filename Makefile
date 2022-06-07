@@ -10,3 +10,15 @@ setup-env:
 
 setup-local: get-pyglue-libs pip-install setup-env
 	echo 'Local setup done'
+
+run-example-job:
+	docker run -it \
+		-v "$$(pwd)/src:/src" \
+		-e AWS_DEFAULT_REGION=us-east-1 \
+		-e AWS_ACCESS_KEY_ID \
+		-e AWS_SECRET_ACCESS_KEY \
+		-e AWS_SESSION_TOKEN \
+		-w /src \
+		--entrypoint=/home/glue_user/spark/bin/pyspark \
+		sha256:42fb92b99d96a201d5447034ea06479a7cd61266dd4af7afeee704283d46fcc7 \
+		example_job.py
