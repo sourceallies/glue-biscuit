@@ -22,3 +22,9 @@ run-example-job:
 		--entrypoint=/home/glue_user/spark/bin/pyspark \
 		sha256:42fb92b99d96a201d5447034ea06479a7cd61266dd4af7afeee704283d46fcc7 \
 		example_job.py
+
+lint:
+	flake8 ./src
+
+format:
+	black ./src
