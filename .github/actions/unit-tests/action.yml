@@ -1,4 +1,0 @@
-name: Run unit tests
-runs:
-  using: "docker"
-  image: "../../../Dockerfile"
