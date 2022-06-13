@@ -26,3 +26,16 @@ jobs:
 
       - name: Deploy
         run: sam deploy
+
+      - name: Upload Sample Data
+        run: |
+          BUCKET=$(aws cloudformation describe-stack-resources \
+            --no-cli-pager \
+            --stack-name=glue-reference-implementation \
+            --logical-resource-id=DataBucket \
+            --query='StackResources[0].PhysicalResourceId' \
+            --output=text)
+          aws s3 sync \
+            --no-cli-pager \
+            --delete \
+            sample_data "s3://${BUCKET}/sample_data"
