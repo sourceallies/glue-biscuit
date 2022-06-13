@@ -1,8 +1,7 @@
-from awsglue import DynamicFrame
 from awsglue.context import GlueContext
-from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql.functions import col
+
 from pyspark.context import SparkContext
+from pyspark.sql import SparkSession
 
 def source(glueContext: GlueContext) -> DataFrame:
     pass
