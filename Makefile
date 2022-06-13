@@ -33,4 +33,4 @@ docker-build:
 	docker build -t glue .
 
 test:
-	docker run -v "$$(pwd)/src:/src" -w /src --entrypoint pytest glue
+	docker run -v "$$(pwd)/src:/project/src" -w /project --entrypoint pytest glue
