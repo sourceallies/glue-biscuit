@@ -17,21 +17,21 @@ def mock_glue_context():
     spark = SparkSession.builder.getOrCreate()
     gc = GlueContext(spark.sparkContext)
 
-    val = gc.create_dynamic_frame_from_rdd(
-        spark.sparkContext.parallelize([
-            {"a": 1}
-        ]),
-        'sample input'
-    )
-
     gc.create_dynamic_frame_from_options = Mock('create_dynamic_frame_from_options')
     gc.write_dynamic_frame_from_catalog = Mock('write_dynamic_frame_from_catalog')
 
-    gc.create_dynamic_frame_from_options.return_value = val
     yield gc
 
 
 def test_load_books(mock_glue_context: GlueContext):
+    mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
+        mock_glue_context.spark_session.sparkContext.parallelize([
+            {"a": 1}
+        ]),
+        'sample input'
+    )
+    mock_glue_context.create_dynamic_frame_from_options.return_value = mock_data
+
     actualDF = load_books(mock_glue_context)
 
     mock_glue_context.create_dynamic_frame_from_options.assert_called_with(
