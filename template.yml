@@ -12,16 +12,16 @@ Resources:
         Description: Defines the glue reference datasets
         Name: glue_reference
 
-  OutputTable:
+  RawBooksTable:
     Type: AWS::Glue::Table
     Properties: 
       CatalogId: !Ref AWS::AccountId
       DatabaseName: !Ref Database
       TableInput: 
-        Name: output
+        Name: raw_books
         Description: Stores output dataset
         StorageDescriptor:
-          Location: !Sub "s3://${DataBucket}/output"
+          Location: !Sub "s3://${DataBucket}/raw/books"
           InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
           OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
           SerdeInfo:
@@ -29,8 +29,15 @@ Resources:
           Parameters:
             classification: parquet
           Columns:
-            - Name: id
+            - Name: title
               Type: string
+              Comment: Full title of this book
+            - Name: publish_date
+              Type: date
+              Comment: The date this book was first published
+            - Name: author_name
+              Type: string
+              Comment: The full name of the author
 
   # GlueJobRole:
   #   Type: AWS::IAM::Role
