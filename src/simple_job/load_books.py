@@ -5,9 +5,14 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import *
 import sys
 
-
+#TODO: how do we ensure this returns the expected strucure
+#TODO: can we create a @cached decorator that will store the result if it is called multiple times
 def load_books(glue_context: GlueContext) -> DataFrame:
     # TODO: This is nasty
+    # def get_arg(*args):
+    #   resolved_options = getResolvedOptions(sys.argv, [arg for arg in args if arg != 'job_id'])
+    #   return tuple(resolved_options[arg] for arg in args)
+
     print('using argv', sys.argv)
     bucket_name = getResolvedOptions(sys.argv, ['source_bucket'])['source_bucket']
     return glue_context.create_dynamic_frame_from_options(
@@ -17,7 +22,9 @@ def load_books(glue_context: GlueContext) -> DataFrame:
     ).toDF()
 
 
+#TODO: how do we ensure this saves the expected strucure
 def save_books(books: DataFrame, glue_context: GlueContext):
+    # Is there a way to remove the need to do this?
     df = DynamicFrame.fromDF(books, glue_context, 'books')
     glue_context.write_dynamic_frame_from_catalog(df, 'glue_reference', 'raw_books')
     pass
@@ -27,6 +34,7 @@ def main(glue_context: GlueContext):
     books = load_books(glue_context)
     converted = books.select(
         'title',
+        # G/P talked about ways to ensure structure of output. Protect agienst misnaming columns 
         to_date(col('publish_date'), 'yyyy-MM-dd').alias('publish_date'),
         col('author').alias('author_name')
     )

@@ -26,6 +26,7 @@ def mock_argv():
 
 @pytest.fixture
 def spark_context():
+    #TODO: add options to optimize for local testing
     spark = SparkSession.builder.getOrCreate()
     yield spark.sparkContext
 
@@ -40,6 +41,8 @@ def mock_glue_context(spark_context):
     yield gc
 
 
+# TODO: maybe a decorator that lets you set an argument(s)
+# TODO: another idea is to just mock the getArg helper function
 def test_load_books(mock_glue_context: GlueContext):
     mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
         mock_glue_context.spark_session.sparkContext.parallelize([
