@@ -1,20 +1,14 @@
 from awsglue import DynamicFrame
-from awsglue.utils import getResolvedOptions
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import *
-import sys
+from ..framework.get_job_arguments import get_job_arguments
 
-#TODO: how do we ensure this returns the expected strucure
-#TODO: can we create a @cached decorator that will store the result if it is called multiple times
+
+#  TODO: how do we ensure this returns the expected strucure
+#  TODO: can we create a @cached decorator that will store the result if it is called multiple times
 def load_books(glue_context: GlueContext) -> DataFrame:
-    # TODO: This is nasty
-    # def get_arg(*args):
-    #   resolved_options = getResolvedOptions(sys.argv, [arg for arg in args if arg != 'job_id'])
-    #   return tuple(resolved_options[arg] for arg in args)
-
-    print('using argv', sys.argv)
-    bucket_name = getResolvedOptions(sys.argv, ['source_bucket'])['source_bucket']
+    bucket_name = get_job_arguments('bucket_name')
     return glue_context.create_dynamic_frame_from_options(
         connection_type='s3',
         connection_options={'paths': [f's3://{bucket_name}/sample_data/json/books']},

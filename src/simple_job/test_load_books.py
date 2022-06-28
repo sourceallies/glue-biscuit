@@ -1,29 +1,15 @@
 from datetime import date
 from typing import Dict, List
 
-from pyspark import SparkContext
+from pyspark.sql import SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
-import sys
 import pytest
-from pyspark.sql import SparkSession, DataFrame
-from load_books import main, load_books, save_books
+from .load_books import main, load_books, save_books
+from . import load_books
 
-
-@pytest.fixture(autouse=True)
-def mock_argv():
-    # TODO: how do we change this per test method?
-    mock_args = [
-        'script_name', #The first itme has to be the name of the script
-        '--source_bucket', 'mock_bucket'
-    ]
-    with patch.object(sys, 'argv', mock_args):
-        yield mock_args
-
-
-# NOTE: Gene/Paul think this can be generisized w/o test data
-
+#  NOTE: Gene/Paul think this can be generisized w/o test data
 @pytest.fixture
 def spark_context():
     #TODO: add options to optimize for local testing
@@ -43,7 +29,9 @@ def mock_glue_context(spark_context):
 
 # TODO: maybe a decorator that lets you set an argument(s)
 # TODO: another idea is to just mock the getArg helper function
-def test_load_books(mock_glue_context: GlueContext):
+@patch.object(load_books, 'get_job_arguments')
+def test_load_books(mock_get_job_arguments: Mock, mock_glue_context: GlueContext):
+    mock_get_job_arguments.return_value = ('mock_bucket')
     mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
         mock_glue_context.spark_session.sparkContext.parallelize([
             {"a": 1}
@@ -54,6 +42,7 @@ def test_load_books(mock_glue_context: GlueContext):
 
     actualDF = load_books(mock_glue_context)
 
+    mock_get_job_arguments.assert_called_with('source_bucket')
     mock_glue_context.create_dynamic_frame_from_options.assert_called_with(
         connection_type="s3",
         connection_options={"paths": ["s3://mock_bucket/sample_data/json/books"]},
