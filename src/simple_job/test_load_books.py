@@ -6,8 +6,7 @@ from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
 import pytest
-from .load_books import main, load_books, save_books
-from . import load_books
+from load_books import main, load_books, save_books
 
 #  NOTE: Gene/Paul think this can be generisized w/o test data
 @pytest.fixture
@@ -29,7 +28,7 @@ def mock_glue_context(spark_context):
 
 # TODO: maybe a decorator that lets you set an argument(s)
 # TODO: another idea is to just mock the getArg helper function
-@patch.object(load_books, 'get_job_arguments')
+@patch('load_books.get_job_arguments')
 def test_load_books(mock_get_job_arguments: Mock, mock_glue_context: GlueContext):
     mock_get_job_arguments.return_value = ('mock_bucket')
     mock_data = mock_glue_context.create_dynamic_frame_from_rdd(

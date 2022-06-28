@@ -2,13 +2,15 @@ from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import *
-from ..framework.get_job_arguments import get_job_arguments
+# from ..framework.get_job_arguments import get_job_arguments
 
+def get_job_arguments():
+    pass
 
 #  TODO: how do we ensure this returns the expected strucure
 #  TODO: can we create a @cached decorator that will store the result if it is called multiple times
 def load_books(glue_context: GlueContext) -> DataFrame:
-    bucket_name = get_job_arguments('bucket_name')
+    bucket_name = get_job_arguments('source_bucket')
     return glue_context.create_dynamic_frame_from_options(
         connection_type='s3',
         connection_options={'paths': [f's3://{bucket_name}/sample_data/json/books']},
