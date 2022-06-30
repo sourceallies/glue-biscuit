@@ -12,16 +12,16 @@ Resources:
         Description: Defines the glue reference datasets
         Name: glue_reference
 
-  OutputTable:
+  RawBooksTable:
     Type: AWS::Glue::Table
     Properties: 
       CatalogId: !Ref AWS::AccountId
       DatabaseName: !Ref Database
       TableInput: 
-        Name: output
+        Name: raw_books
         Description: Stores output dataset
         StorageDescriptor:
-          Location: !Sub "s3://${DataBucket}/output"
+          Location: !Sub "s3://${DataBucket}/raw/books"
           InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
           OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
           SerdeInfo:
@@ -29,44 +29,63 @@ Resources:
           Parameters:
             classification: parquet
           Columns:
-            - Name: id
+            - Name: title
               Type: string
+              Comment: Full title of this book
+            - Name: publish_date
+              Type: date
+              Comment: The date this book was first published
+            - Name: author_name
+              Type: string
+              Comment: The full name of the author
 
-  # GlueJobRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - "glue.amazonaws.com"
-  #           Action:
-  #             - "sts:AssumeRole"
-  #     ManagedPolicyArns:
-  #       - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
-  #     Policies:
-  #       - PolicyName: dataaccess
-  #         PolicyDocument:
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - "s3:GetBucketLocation"
-  #                 - "s3:GetObject"
-  #                 - "s3:ListBucket"
-  #                 - "s3:ListBucketMultipartUploads"
-  #                 - "s3:ListMultipartUploadParts"
-  #                 - "s3:AbortMultipartUpload"
-  #                 - "s3:PutObject"
-  #                 - "s3:DeleteObject"
-  #               Resource:
-  #                 - !Sub "arn:aws:s3:::${DataBucket}"
-  #                 - !Sub "arn:aws:s3:::${DataBucket}/*"
-  #             - Effect: Allow
-  #               Action:
-  #                 - "s3:GetBucketLocation"
-  #                 - "s3:GetObject"
-  #                 - "s3:ListBucket"
-  #               Resource:
-  #                 - "*"
+  GlueJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "glue.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: dataaccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetBucketLocation"
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                  - "s3:ListBucketMultipartUploads"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:AbortMultipartUpload"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                Resource:
+                  - !Sub "arn:aws:s3:::${DataBucket}"
+                  - !Sub "arn:aws:s3:::${DataBucket}/*"
+              - Effect: Allow
+                Action:
+                  - "s3:GetBucketLocation"
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                Resource:
+                  - "*"
+
+LoadRawBooksJob:
+  Type: AWS::Glue::Job
+  Properties:
+    GlueVersion: "3.0"
+    Command:
+      Name: glueetl
+      ScriptLocation: ./src/simple_job/load_books.py
+    Role: !Ref GlueJobRole
+    DefaultArguments:
+      "--source_bucket": !Ref DataBucket
+    MaxRetries: 0
 
