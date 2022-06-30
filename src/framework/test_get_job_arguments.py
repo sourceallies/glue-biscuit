@@ -1,21 +1,21 @@
 from unittest.mock import patch
 import pytest
 import sys
+from framework.get_job_arguments import get_job_arguments
 
-from .get_job_arguments import get_job_arguments
 
 @pytest.fixture(autouse=True)
 def mock_argv():
     mock_args = [
-        #The first itme has to be the name of the script
-        'script_name.py', 
+        # The first itme has to be the name of the script
+        'script_name.py',
         '--foo', 'some_value',
         '--bar', 'value_2',
-        '--JOB_ID', 'some_job_id', 
-        '--JOB_RUN_ID', 'run_id', 
-        '--SECURITY_CONFIGURATION', 'config', 
+        '--JOB_ID', 'some_job_id',
+        '--JOB_RUN_ID', 'run_id',
+        '--SECURITY_CONFIGURATION', 'config',
         '--continuation-option', 'continuation-enabled',
-        '--encryption-type' , 'sse-s3',
+        '--encryption-type', 'sse-s3',
     ]
     with patch.object(sys, 'argv', mock_args):
         yield mock_args
@@ -42,7 +42,7 @@ def test_multiple_arguments_returned_in_order():
     ('JOB_ID', 'some_job_id'),
     ('JOB_RUN_ID', 'run_id'),
     ('SECURITY_CONFIGURATION', 'config'),
-    ('encryption_type' , 'sse-s3'),
+    ('encryption_type', 'sse-s3'),
 ])
 def test_built_int_args_are_resolvable(key, value):
     result, = get_job_arguments(key)
