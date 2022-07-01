@@ -77,15 +77,15 @@ Resources:
                 Resource:
                   - "*"
 
-LoadRawBooksJob:
-  Type: AWS::Glue::Job
-  Properties:
-    GlueVersion: "3.0"
-    Command:
-      Name: glueetl
-      ScriptLocation: ./src/simple_job/load_books.py
-    Role: !Ref GlueJobRole
-    DefaultArguments:
-      "--source_bucket": !Ref DataBucket
-    MaxRetries: 0
+  LoadRawBooksJob:
+    Type: AWS::Glue::Job
+    Properties:
+      GlueVersion: "3.0"
+      Command:
+        Name: glueetl
+        ScriptLocation: ./src/simple_job/load_books.py
+      Role: !Ref GlueJobRole
+      DefaultArguments:
+        "--source_bucket": !Ref DataBucket
+      MaxRetries: 0
 
