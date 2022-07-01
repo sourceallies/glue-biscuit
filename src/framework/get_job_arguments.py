@@ -3,12 +3,12 @@ from awsglue.utils import getResolvedOptions
 import sys
 
 __auto_included_args = {
-    'JOB_ID',
-    'JOB_RUN_ID',
-    'SECURITY_CONFIGURATION',
-    'encryption_type',
-    'continuation_option',
-    'job_bookmark_option'
+    "JOB_ID",
+    "JOB_RUN_ID",
+    "SECURITY_CONFIGURATION",
+    "encryption_type",
+    "continuation_option",
+    "job_bookmark_option",
 }
 
 
