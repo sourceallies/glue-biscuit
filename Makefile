@@ -23,6 +23,7 @@ run-glue-container:
 		-v "$$(pwd):/work" \
 		-e AWS_DEFAULT_REGION=us-east-1 \
 		-e DISABLE_SSL=true \
+		-e PYTHONPATH=/work/src \
 		-w /work \
 		--entrypoint=bash \
 		amazon/aws-glue-libs:glue_libs_3.0.0_image_01

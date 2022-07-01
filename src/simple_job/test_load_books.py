@@ -1,32 +1,17 @@
 from datetime import date
 from typing import Dict, List
-
-from pyspark import SparkContext
+import pytest
+from pyspark.sql import SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
-import sys
-import pytest
-from pyspark.sql import SparkSession, DataFrame
-from load_books import main, load_books, save_books
+from simple_job.load_books import main, load_books, save_books
 
 
-@pytest.fixture(autouse=True)
-def mock_argv():
-    # TODO: how do we change this per test method?
-    mock_args = [
-        'script_name', #The first itme has to be the name of the script
-        '--source_bucket', 'mock_bucket'
-    ]
-    with patch.object(sys, 'argv', mock_args):
-        yield mock_args
-
-
-# NOTE: Gene/Paul think this can be generisized w/o test data
-
+#  NOTE: Gene/Paul think this can be generisized w/o test data
 @pytest.fixture
 def spark_context():
-    #TODO: add options to optimize for local testing
+    # TODO: add options to optimize for local testing
     spark = SparkSession.builder.getOrCreate()
     yield spark.sparkContext
 
@@ -41,9 +26,9 @@ def mock_glue_context(spark_context):
     yield gc
 
 
-# TODO: maybe a decorator that lets you set an argument(s)
-# TODO: another idea is to just mock the getArg helper function
-def test_load_books(mock_glue_context: GlueContext):
+@patch('simple_job.load_books.get_job_arguments')
+def test_load_books(mock_get_job_arguments: Mock, mock_glue_context: GlueContext):
+    mock_get_job_arguments.return_value = ('mock_bucket')
     mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
         mock_glue_context.spark_session.sparkContext.parallelize([
             {"a": 1}
@@ -54,6 +39,7 @@ def test_load_books(mock_glue_context: GlueContext):
 
     actualDF = load_books(mock_glue_context)
 
+    mock_get_job_arguments.assert_called_with('source_bucket')
     mock_glue_context.create_dynamic_frame_from_options.assert_called_with(
         connection_type="s3",
         connection_options={"paths": ["s3://mock_bucket/sample_data/json/books"]},
@@ -64,8 +50,8 @@ def test_load_books(mock_glue_context: GlueContext):
     assert [row.asDict() for row in actualDF.collect()] == expectedData
 
 
-@patch('load_books.load_books')
-@patch('load_books.save_books')
+@patch('simple_job.load_books.load_books')
+@patch('simple_job.load_books.save_books')
 def test_main_converts_books(mock_save_books: Mock, mock_load_books: Mock, mock_glue_context: GlueContext):
     book_df = mock_glue_context.spark_session.createDataFrame([
         {
@@ -94,7 +80,7 @@ def test_save_books(mock_glue_context: GlueContext):
 
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
         EqualDynamicFrame([{"title": "t",  "publish_date": date.fromisoformat('2022-02-04'), "author_name": "a"}]),
-        'glue_reference', 
+        'glue_reference',
         'raw_books'
     )
 
