@@ -5,6 +5,7 @@ from pyspark.sql import SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
+from framework.equals_data_frame import EqualDataFrame
 from simple_job.load_books import main, load_books, save_books
 
 
@@ -101,20 +102,6 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
-
-
-class EqualDataFrame(DataFrame):
-    expected = []
-
-    def __init__(self, expected: List[Dict]):
-        self.expected = expected
-
-    def __repr__(self):
-        return f"Expected: {repr(self.expected)}"
-
-    def __eq__(self, other: DynamicFrame):
-        other_rows = [row.asDict() for row in other.collect()]
-        return other_rows == self.expected
 
 
 class EqualDynamicFrame(DynamicFrame):
