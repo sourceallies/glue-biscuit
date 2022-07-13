@@ -36,3 +36,18 @@ def test_not_equal_when_column_value_differs(spark_session: SparkSession):
     
     comparitor = EqualDataFrame([{"a": 2}])
     assert not comparitor.__eq__(right)
+
+
+# Note: is this a good way to do this?
+def test_equal_via_method(spark_session: SparkSession):
+    def data_frame_eq(self: DataFrame, other: DataFrame):
+        self_data = [row.asDict() for row in self.collect()]
+        other_data = [row.asDict() for row in self.collect()]
+        return self_data == other_data
+
+    DataFrame.__eq__ = data_frame_eq
+    left: DataFrame = spark_session.createDataFrame([{"a": 1}])
+    right: DataFrame = spark_session.createDataFrame([{"a": 1}])
+
+    assert left == right
+    assert left == [{"a": 1}]
