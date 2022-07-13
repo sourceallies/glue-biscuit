@@ -24,8 +24,16 @@ jobs:
           role-to-assume: "arn:aws:iam::144406111952:role/Deployer"
           role-session-name: DeployToDevSandbox
 
+      - name: Upload
+        run: |
+          GIT_HASH=`git rev-parse HEAD`
+          (cd ./src; zip -r "../${GIT_HASH}.zip" ./*)
+          aws s3 cp "./${GIT_HASH}.zip" "s3://amod-deploy-bucket/etl-files/${GIT_HASH}.zip"
+
       - name: Deploy
-        run: sam deploy
+        run: |
+          GIT_HASH=`git rev-parse HEAD`
+          sam deploy --parameter-overrides "GitHash=$GIT_HASH"
 
       - name: Upload Sample Data
         run: |
