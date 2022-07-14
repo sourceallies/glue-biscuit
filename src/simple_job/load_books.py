@@ -21,7 +21,7 @@ def save_books(books: DataFrame, glue_context: GlueContext):
     # Is there a way to remove the need to do this?
     df = DynamicFrame.fromDF(books, glue_context, "books")
     glue_context.write_dynamic_frame_from_catalog(df, "glue_reference", "raw_books")
-    pass
+    glue_context.purge_table("glue_reference", "raw_books")
 
 
 def main(glue_context: GlueContext):
@@ -32,6 +32,7 @@ def main(glue_context: GlueContext):
         to_date(col("publish_date"), "yyyy-MM-dd").alias("publish_date"),
         col("author").alias("author_name"),
     )
+
     save_books(converted, glue_context)
 
 
