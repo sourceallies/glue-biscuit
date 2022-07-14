@@ -18,7 +18,8 @@ def test_mock_glue_context_is_correct_type(mock_glue_context: GlueContext):
     'create_data_frame_from_catalog',
     'create_data_frame_from_options',
     'forEachBatch',
-
+    'purge_table',
+    'purge_s3_path',
     'getSink',
     'write_dynamic_frame_from_options',
     'write_from_options',
