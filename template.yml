@@ -92,6 +92,6 @@ Resources:
       Role: !Ref GlueJobRole
       DefaultArguments:
         "--source_bucket": !Ref DataBucket
-        "--extra-py-files": !Join ["", ["s3://amod-deploy-bucket/etl-files/", !Ref GitHash, ".zip"]]
+        "--extra-py-files": !Sub "s3://amod-deploy-bucket/etl-files/${GitHash}.zip"
       MaxRetries: 0
 
