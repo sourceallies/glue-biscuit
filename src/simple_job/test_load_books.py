@@ -73,7 +73,7 @@ def test_save_books(mock_glue_context: GlueContext):
 
     save_books(book_df, mock_glue_context)
 
-    mock_glue_context.purge_table.assert_called_with("glue_reference", "raw_books")
+    mock_glue_context.purge_table.assert_called_with("glue_reference", "raw_books", options={"retentionPeriod": 0})
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
         EqualDynamicFrame(
             [
