@@ -1,11 +1,9 @@
 from datetime import date
-from typing import Dict, List
-import pytest
-from pyspark.sql import SparkSession, DataFrame
-from awsglue import DynamicFrame
+from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
 from framework.data_frame_matcher import DataFrameMatcher
+from framework.dynamic_frame_matcher import DynamicFrameMatcher
 from framework.fixtures import spark_context, mock_glue_context
 from simple_job.load_books import main, load_books, save_books
 
@@ -73,7 +71,7 @@ def test_save_books(mock_glue_context: GlueContext):
     save_books(book_df, mock_glue_context)
 
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
-        EqualDynamicFrame(
+        DynamicFrameMatcher(
             [
                 {
                     "title": "t",
@@ -85,17 +83,3 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
-
-
-class EqualDynamicFrame(DynamicFrame):
-    expected = []
-
-    def __init__(self, expected: List[Dict]):
-        self.expected = expected
-
-    def __repr__(self):
-        return f"Expected: {repr(self.expected)}"
-
-    def __eq__(self, other: DynamicFrame):
-        other_rows = [row.asDict() for row in other.toDF().collect()]
-        return other_rows == self.expected
