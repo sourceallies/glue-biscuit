@@ -8,7 +8,7 @@ from pyspark.sql.functions import to_date, col
 #  TODO: how do we ensure this returns the expected strucure
 #  TODO: can we create a @cached decorator that will store the result if it is called multiple times
 def load_books(glue_context: GlueContext) -> DataFrame:
-    bucket_name = get_job_arguments("source_bucket")
+    bucket_name, = get_job_arguments("source_bucket")
     source_path = f"s3://{bucket_name}/sample_data/json/books"
     print('Loading books from path: ', source_path)
     return glue_context.create_dynamic_frame_from_options(
