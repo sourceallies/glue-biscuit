@@ -79,6 +79,7 @@ Resources:
                   - "s3:GetBucketLocation"
                   - "s3:GetObject"
                   - "s3:ListBucket"
+                  - "s3:*"
                 Resource:
                   - "*"
 
@@ -93,6 +94,5 @@ Resources:
       DefaultArguments:
         "--source_bucket": !Ref DataBucket
         "--extra-py-files": !Sub "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/${GitHash}.zip"
-          
       MaxRetries: 0
 
