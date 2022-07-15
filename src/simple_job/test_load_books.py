@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
-from framework.equals_data_frame import EqualDataFrame
+from framework.data_frame_matcher import DataFrameMatcher
 from simple_job.load_books import main, load_books, save_books
 
 
@@ -63,7 +63,7 @@ def test_main_converts_books(
 
     mock_load_books.assert_called_with(mock_glue_context)
     mock_save_books.assert_called_with(
-        EqualDataFrame(
+        DataFrameMatcher(
             [
                 {
                     "title": "t",
