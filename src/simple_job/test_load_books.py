@@ -1,9 +1,14 @@
 from datetime import date
+from pyspark.sql import DataFrame
+from awsglue.context import GlueContext
+from unittest.mock import patch, Mock
 from typing import Dict, List
 from pyspark.sql import SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
+from framework.data_frame_matcher import DataFrameMatcher
+from framework.dynamic_frame_matcher import DynamicFrameMatcher
 from framework.fixtures import spark_context, mock_glue_context
 from simple_job.load_books import main, load_books, save_books
 
@@ -44,7 +49,7 @@ def test_main_converts_books(
 
     mock_load_books.assert_called_with(mock_glue_context)
     mock_save_books.assert_called_with(
-        EqualDataFrame(
+        DataFrameMatcher(
             [
                 {
                     "title": "t",
@@ -75,7 +80,7 @@ def test_save_books(mock_glue_context: GlueContext):
 
     mock_glue_context.purge_table.assert_called_with("glue_reference", "raw_books", options={"retentionPeriod": 0})
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
-        EqualDynamicFrame(
+        DynamicFrameMatcher(
             [
                 {
                     "title": "t",
@@ -91,31 +96,3 @@ def test_save_books(mock_glue_context: GlueContext):
         call.purge_table(ANY, ANY),
         call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
     ])
-
-
-class EqualDataFrame(DataFrame):
-    expected = []
-
-    def __init__(self, expected: List[Dict]):
-        self.expected = expected
-
-    def __repr__(self):
-        return f"Expected: {repr(self.expected)}"
-
-    def __eq__(self, other: DynamicFrame):
-        other_rows = [row.asDict() for row in other.collect()]
-        return other_rows == self.expected
-
-
-class EqualDynamicFrame(DynamicFrame):
-    expected = []
-
-    def __init__(self, expected: List[Dict]):
-        self.expected = expected
-
-    def __repr__(self):
-        return f"Expected: {repr(self.expected)}"
-
-    def __eq__(self, other: DynamicFrame):
-        other_rows = [row.asDict() for row in other.toDF().collect()]
-        return other_rows == self.expected
