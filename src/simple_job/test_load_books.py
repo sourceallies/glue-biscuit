@@ -5,25 +5,8 @@ from pyspark.sql import SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
+from framework.fixtures import spark_context, mock_glue_context
 from simple_job.load_books import main, load_books, save_books
-
-
-#  NOTE: Gene/Paul think this can be generisized w/o test data
-@pytest.fixture
-def spark_context():
-    # TODO: add options to optimize for local testing
-    spark = SparkSession.builder.getOrCreate()
-    yield spark.sparkContext
-
-
-@pytest.fixture
-def mock_glue_context(spark_context):
-    gc = GlueContext(spark_context)
-
-    gc.create_dynamic_frame_from_options = Mock("create_dynamic_frame_from_options")
-    gc.write_dynamic_frame_from_catalog = Mock("write_dynamic_frame_from_catalog")
-
-    yield gc
 
 
 @patch("simple_job.load_books.get_job_arguments")
