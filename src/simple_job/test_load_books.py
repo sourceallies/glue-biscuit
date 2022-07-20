@@ -2,6 +2,11 @@ from datetime import date
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock
+from typing import Dict, List
+from pyspark.sql import SparkSession, DataFrame
+from awsglue import DynamicFrame
+from awsglue.context import GlueContext
+from unittest.mock import patch, Mock, call, ANY
 from framework.data_frame_matcher import DataFrameMatcher
 from framework.dynamic_frame_matcher import DynamicFrameMatcher
 from framework.fixtures import spark_context, mock_glue_context
@@ -10,7 +15,7 @@ from simple_job.load_books import main, load_books, save_books
 
 @patch("simple_job.load_books.get_job_arguments")
 def test_load_books(mock_get_job_arguments: Mock, mock_glue_context: GlueContext):
-    mock_get_job_arguments.return_value = "mock_bucket"
+    mock_get_job_arguments.return_value = ("mock_bucket",)
     mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
         mock_glue_context.spark_session.sparkContext.parallelize([{"a": 1}]),
         "sample input",
@@ -58,6 +63,9 @@ def test_main_converts_books(
 
 
 def test_save_books(mock_glue_context: GlueContext):
+    call_order_mock = Mock()
+    call_order_mock.purge_table = mock_glue_context.purge_table
+    call_order_mock.write_dynamic_frame_from_catalog = mock_glue_context.write_dynamic_frame_from_catalog
     book_df = mock_glue_context.spark_session.createDataFrame(
         [
             {
@@ -70,6 +78,7 @@ def test_save_books(mock_glue_context: GlueContext):
 
     save_books(book_df, mock_glue_context)
 
+    mock_glue_context.purge_table.assert_called_with("glue_reference", "raw_books", options={"retentionPeriod": 0})
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
         DynamicFrameMatcher(
             [
@@ -83,3 +92,7 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
+    call_order_mock.assert_has_calls([
+        call.purge_table(ANY, ANY),
+        call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
+    ])

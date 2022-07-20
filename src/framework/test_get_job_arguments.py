@@ -1,8 +1,7 @@
 from unittest.mock import patch
 import pytest
 import sys
-from framework.get_job_arguments import get_job_arguments
-
+from framework.get_job_arguments import get_job_arguments, get_job_argument
 
 @pytest.fixture(autouse=True)
 def mock_argv():
@@ -57,3 +56,13 @@ def test_multiple_arguments_returned_in_order():
 def test_built_int_args_are_resolvable(key, value):
     (result,) = get_job_arguments(key)
     assert result == value
+
+
+@patch('framework.get_job_arguments.get_job_arguments')
+def test_get_job_argument_convinence_function_translates(mock_get_job_arguments):
+    mock_get_job_arguments.return_value = ('a',)
+
+    result, = get_job_argument('arg_name')
+
+    mock_get_job_arguments.assert_called_with('arg_name')
+    assert result == 'a'
