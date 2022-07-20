@@ -10,7 +10,7 @@ from simple_job.load_books import main, load_books, save_books
 
 @patch("simple_job.load_books.get_job_arguments")
 def test_load_books(mock_get_job_arguments: Mock, mock_glue_context: GlueContext):
-    mock_get_job_arguments.return_value = "mock_bucket"
+    mock_get_job_arguments.return_value = ("mock_bucket",)
     mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
         mock_glue_context.spark_session.sparkContext.parallelize([{"a": 1}]),
         "sample input",
