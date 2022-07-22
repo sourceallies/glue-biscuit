@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: make pip-install
 
-      - name: Lint
+      - name: Check format
         run: make lint
 
       - name: Run unit tests
