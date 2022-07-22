@@ -6,7 +6,18 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run Tests
+        run: make run-unit-tests
+          
+
   deploy-aws:
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -24,5 +35,24 @@ jobs:
           role-to-assume: "arn:aws:iam::144406111952:role/Deployer"
           role-session-name: DeployToDevSandbox
 
+      - name: Upload
+        run: |
+          cd ./src;
+          zip -r - ./* | aws s3 cp - "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/${GITHUB_SHA}.zip"
+
       - name: Deploy
-        run: sam deploy
+        run: |
+          sam deploy --parameter-overrides "GitHash=$GITHUB_SHA"
+
+      - name: Upload Sample Data
+        run: |
+          BUCKET=$(aws cloudformation describe-stack-resources \
+            --no-cli-pager \
+            --stack-name=glue-reference-implementation \
+            --logical-resource-id=DataBucket \
+            --query='StackResources[0].PhysicalResourceId' \
+            --output=text)
+          aws s3 sync \
+            --no-cli-pager \
+            --delete \
+            sample_data "s3://${BUCKET}/sample_data"

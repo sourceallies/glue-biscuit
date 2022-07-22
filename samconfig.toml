@@ -7,3 +7,4 @@ region = "us-east-1"
 [default.deploy.parameters]
 fail_on_empty_changeset = "false"
 capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
