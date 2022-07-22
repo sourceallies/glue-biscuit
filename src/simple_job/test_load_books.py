@@ -5,9 +5,7 @@ from unittest.mock import patch, Mock
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
-from framework.data_frame_matcher import DataFrameMatcher
-from framework.dynamic_frame_matcher import DynamicFrameMatcher
-from framework.fixtures import spark_context, mock_glue_context
+from framework import DataFrameMatcher, DynamicFrameMatcher, spark_context, mock_glue_context
 from simple_job.load_books import main, load_books, save_books
 
 

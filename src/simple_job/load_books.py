@@ -1,7 +1,7 @@
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
-from framework.get_job_arguments import get_job_arguments
+from framework import get_job_arguments
 from pyspark.sql.functions import to_date, col
 
 
