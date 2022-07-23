@@ -1,7 +1,6 @@
 from datetime import date
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
-from unittest.mock import patch, Mock
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
@@ -90,18 +89,7 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
-
-    first_actual = call_order_mock.mock_calls[0]
-    print('actual', first_actual)
-    expected = call('purge_table', (ANY, ANY, ANY), {})
-    print('expected', expected)
-
-    assert first_actual._mock_parent == expected._mock_parent
-    
-    assert first_actual == expected
-
-
     call_order_mock.assert_has_calls([
-        call.purge_table(ANY, ANY, ANY),
+        call.purge_table(ANY, ANY, options=ANY),
         call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
     ])
