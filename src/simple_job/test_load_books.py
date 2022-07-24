@@ -1,7 +1,6 @@
 from datetime import date
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
-from unittest.mock import patch, Mock
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
@@ -60,8 +59,11 @@ def test_main_converts_books(
 
 def test_save_books(mock_glue_context: GlueContext):
     call_order_mock = Mock()
-    call_order_mock.attach_mock(mock_glue_context.purge_table, 'purge_table')
-    call_order_mock.attach_mock(mock_glue_context.write_dynamic_frame_from_catalog, 'write_dynamic_frame_from_catalog')
+    call_order_mock.attach_mock(mock_glue_context.purge_table, "purge_table")
+    call_order_mock.attach_mock(
+        mock_glue_context.write_dynamic_frame_from_catalog,
+        "write_dynamic_frame_from_catalog",
+    )
     book_df = mock_glue_context.spark_session.createDataFrame(
         [
             {
@@ -74,7 +76,9 @@ def test_save_books(mock_glue_context: GlueContext):
 
     save_books(book_df, mock_glue_context)
 
-    mock_glue_context.purge_table.assert_called_with("glue_reference", "raw_books", options={"retentionPeriod": 0})
+    mock_glue_context.purge_table.assert_called_with(
+        "glue_reference", "raw_books", options={"retentionPeriod": 0}
+    )
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
         DynamicFrameMatcher(
             [
@@ -88,7 +92,7 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
-    call_order_mock.mock_calls == [
-        call.purge_table(ANY, ANY, ANY),
+    call_order_mock.assert_has_calls([
+        call.purge_table(ANY, ANY, options=ANY),
         call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
-    ]
+    ])

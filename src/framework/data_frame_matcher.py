@@ -6,6 +6,7 @@ class DataFrameMatcher(DataFrame):
     """
     A PyTest Matcher implementation that can compare the provided List[Dict] to a DataFrame
     """
+
     expected = []
 
     def __init__(self, expected: List[Dict]):

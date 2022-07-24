@@ -3,6 +3,7 @@ import pytest
 import sys
 from framework.job_argument_utils import get_job_arguments, get_job_argument
 
+
 @pytest.fixture(autouse=True)
 def mock_argv():
     mock_args = [
@@ -60,9 +61,9 @@ def test_built_int_args_are_resolvable(key, value):
 
 @patch('framework.job_argument_utils.get_job_arguments')
 def test_get_job_argument_convinence_function_translates(mock_get_job_arguments):
-    mock_get_job_arguments.return_value = ('a',)
+    mock_get_job_arguments.return_value = ("a",)
 
-    result, = get_job_argument('arg_name')
+    (result,) = get_job_argument("arg_name")
 
-    mock_get_job_arguments.assert_called_with('arg_name')
-    assert result == 'a'
+    mock_get_job_arguments.assert_called_with("arg_name")
+    assert result == "a"

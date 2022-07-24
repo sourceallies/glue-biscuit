@@ -26,5 +26,5 @@ def get_job_argument(arg_name: str) -> str:
     """
     Convinence wrapper around get_job_arguments for getting a single argument
     """
-    result, = get_job_arguments(arg_name)
+    (result,) = get_job_arguments(arg_name)
     return result

@@ -6,6 +6,7 @@ class DynamicFrameMatcher(DynamicFrame):
     """
     A Pytest Matcher implementation that can compare the provided List[Dict] to a Glue DynamicFrame
     """
+
     expected = []
 
     def __init__(self, expected: List[Dict]):
