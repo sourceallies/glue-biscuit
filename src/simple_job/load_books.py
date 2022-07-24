@@ -8,9 +8,9 @@ from pyspark.sql.functions import to_date, col
 #  TODO: how do we ensure this returns the expected strucure
 #  TODO: can we create a @cached decorator that will store the result if it is called multiple times
 def load_books(glue_context: GlueContext) -> DataFrame:
-    bucket_name, = get_job_arguments("source_bucket")
+    (bucket_name,) = get_job_arguments("source_bucket")
     source_path = f"s3://{bucket_name}/sample_data/json/books"
-    print('Loading books from path: ', source_path)
+    print("Loading books from path: ", source_path)
     return glue_context.create_dynamic_frame_from_options(
         connection_type="s3",
         connection_options={"paths": [source_path]},
@@ -20,7 +20,9 @@ def load_books(glue_context: GlueContext) -> DataFrame:
 
 # TODO: how do we ensure this saves the expected strucure
 def save_books(books: DataFrame, glue_context: GlueContext):
-    glue_context.purge_table("glue_reference", "raw_books", options={"retentionPeriod": 0})
+    glue_context.purge_table(
+        "glue_reference", "raw_books", options={"retentionPeriod": 0}
+    )
     # Is there a way to remove the need to do this?
     df = DynamicFrame.fromDF(books, glue_context, "books")
     glue_context.write_dynamic_frame_from_catalog(df, "glue_reference", "raw_books")
