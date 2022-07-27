@@ -94,7 +94,9 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
-    call_order_mock.assert_has_calls([
-        call.purge_table(ANY, ANY, options=ANY),
-        call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
-    ])
+    call_order_mock.assert_has_calls(
+        [
+            call.purge_table(ANY, ANY, options=ANY),
+            call.write_dynamic_frame_from_catalog(ANY, ANY, ANY),
+        ]
+    )
