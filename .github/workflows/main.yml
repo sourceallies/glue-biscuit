@@ -12,13 +12,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Python3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.7"
+          cache: "pip"
+      
       - name: Run Tests
         run: make run-unit-tests
-          
+
+      - name: Install dependencies
+        run: make pip-install
+
+      - name: Check format
+        run: make lint
 
   deploy-aws:
     needs: verify
     runs-on: ubuntu-latest
+    concurrency: deploy
     permissions:
       id-token: write
       contents: read
