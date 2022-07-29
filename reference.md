@@ -20,3 +20,10 @@ In this second class of use cases, Glue jobs are no longer one-off scripts, but 
 Therefore, we need to apply a software engineering process.
 This document is our attempt to explain the best practices for how to create maintainable, testable, and scalable Glue jobs for a professional development organization. 
 It includes a companion library to help software teams achieve these goals.
+
+This guide assumes the reader has:
+- A general understanding of Python
+- Familiarity with AWS and the common services (IAM, S3, Cloudformation)
+- Created a basic Glue job. Possibly as part of a tutorial
+- The concepts of a Continuious Deployment pipeline and why they are used within software development
+- Familiarity with automated unit testing
