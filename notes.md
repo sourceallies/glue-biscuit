@@ -14,7 +14,7 @@
     1. Target audiance: Enterprise development teams
     1. What problem does this solve
     1. This approach
-1. Glue Job Structure
+1. [Glue Job Structure](./reference.md#glue-job-structure)
 1. Testing
     1.  Unit Testing
         1. Focuses on logic/business rules
