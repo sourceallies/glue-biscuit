@@ -4,9 +4,12 @@ from awsglue.context import GlueContext
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
-from framework.data_frame_matcher import DataFrameMatcher
-from framework.dynamic_frame_matcher import DynamicFrameMatcher
-from framework.fixtures import spark_context, mock_glue_context
+from framework import (
+    DataFrameMatcher,
+    DynamicFrameMatcher,
+    spark_context,
+    mock_glue_context,
+)
 from simple_job.load_books import main, load_books, save_books
 
 
@@ -94,7 +97,9 @@ def test_save_books(mock_glue_context: GlueContext):
         "glue_reference",
         "raw_books",
     )
-    call_order_mock.assert_has_calls([
-        call.purge_table(ANY, ANY, options=ANY),
-        call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
-    ])
+    call_order_mock.assert_has_calls(
+        [
+            call.purge_table(ANY, ANY, options=ANY),
+            call.write_dynamic_frame_from_catalog(ANY, ANY, ANY),
+        ]
+    )
