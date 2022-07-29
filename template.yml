@@ -44,6 +44,42 @@ Resources:
               Type: string
               Comment: The full name of the author
 
+  SchemaRegistry:
+    Type: AWS::Glue::Registry
+    Properties: 
+      Name: glue_reference
+      Description: Glue reference schemas
+
+  BookSchema:
+    Type: AWS::Glue::Schema
+    Properties: 
+      Registry:
+        Arn: !Ref SchemaRegistry
+      Name: Book
+      Compatibility: NONE #TODO: Change this to something real
+      DataFormat: AVRO
+      # is inplace good here, or would
+      SchemaDefinition: !ToJsonString:
+        type: record
+        namespace: glue_reference
+        name: Book
+        fields:
+          - name: title
+            type: string
+            doc: Full title of this book
+          - name: publish_date
+            type: date
+            doc: The date this book was first published
+          - name: author_name
+            type: string
+            doc: The full name of the author
+          - name: author_birth_date
+            type: date
+            doc: The date the author was born
+          - name: author_id
+            type: string
+            doc: Unique identifier for this author
+
   GlueJobRole:
     Type: AWS::IAM::Role
     Properties:
