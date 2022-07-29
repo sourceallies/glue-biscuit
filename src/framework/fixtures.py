@@ -12,29 +12,30 @@ def spark_context():
 
 @pytest.fixture
 def mock_glue_context(spark_context):
+    mocked_methods = [
+        "create_dynamic_frame_from_catalog",
+        "create_dynamic_frame_from_options",
+        "create_sample_dynamic_frame_from_catalog",
+        "create_sample_dynamic_frame_from_options",
+        "getSource",
+        "create_data_frame_from_catalog",
+        "create_data_frame_from_options",
+        "forEachBatch",
+        "getSink",
+        "write_dynamic_frame_from_options",
+        "write_from_options",
+        "write_dynamic_frame_from_catalog",
+        "write_dynamic_frame_from_jdbc_conf",
+        "write_from_jdbc_conf",
+        "purge_table",
+        "purge_s3_path",
+    ]
     gc = GlueContext(spark_context)
+    context_mock = Mock(spec=gc, wraps=gc)
 
-    gc.create_dynamic_frame_from_catalog = Mock("create_dynamic_frame_from_catalog")
-    gc.create_dynamic_frame_from_options = Mock("create_dynamic_frame_from_options")
-    gc.create_sample_dynamic_frame_from_catalog = Mock(
-        "create_sample_dynamic_frame_from_catalog"
-    )
-    gc.create_sample_dynamic_frame_from_options = Mock(
-        "create_sample_dynamic_frame_from_options"
-    )
-    gc.getSource = Mock("getSource")
-    gc.create_data_frame_from_catalog = Mock("create_data_frame_from_catalog")
-    gc.create_data_frame_from_options = Mock("create_data_frame_from_options")
-    gc.forEachBatch = Mock("forEachBatch")
+    for name in mocked_methods:
+        method_mock: Mock = getattr(context_mock, name, None)
+        if method_mock is not None:
+            method_mock.return_value = None
 
-    gc.getSink = Mock("getSink")
-    gc.write_dynamic_frame_from_options = Mock("write_dynamic_frame_from_options")
-    gc.write_from_options = Mock("write_from_options")
-    gc.write_dynamic_frame_from_catalog = Mock("write_dynamic_frame_from_catalog")
-    gc.write_dynamic_frame_from_jdbc_conf = Mock("write_dynamic_frame_from_jdbc_conf")
-    gc.write_from_jdbc_conf = Mock("write_from_jdbc_conf")
-
-    gc.purge_table = Mock("purge_table")
-    gc.purge_s3_path = Mock("purge_s3_path")
-
-    yield gc
+    yield context_mock
