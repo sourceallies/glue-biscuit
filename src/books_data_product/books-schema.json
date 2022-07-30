@@ -1,7 +1,7 @@
 {
     "type": "record",
     "namespace": "ABC_Organization",
-    "name": "Book",
+    "name": "Books",
     "fields": [
         {
             "name": "title",

@@ -77,7 +77,7 @@ Resources:
             type: date
             doc: The date the author was born
           - name: author_id
-            type: string
+            type: bigint
             doc: Unique identifier for this author
 
   GlueJobRole:
@@ -125,6 +125,19 @@ Resources:
       Command:
         Name: glueetl
         ScriptLocation: ./src/simple_job/load_books.py
+      Role: !Ref GlueJobRole
+      DefaultArguments:
+        "--source_bucket": !Ref DataBucket
+        "--extra-py-files": !Sub "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/${GitHash}.zip"
+      MaxRetries: 0
+
+  LoadBooksJob:
+    Type: AWS::Glue::Job
+    Properties:
+      GlueVersion: "3.0"
+      Command:
+        Name: glueetl
+        ScriptLocation: ./src/books_data_product/load_books.py
       Role: !Ref GlueJobRole
       DefaultArguments:
         "--source_bucket": !Ref DataBucket

@@ -1,4 +1,3 @@
-from asyncore import write
 from datetime import date
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
