@@ -77,7 +77,7 @@ Resources:
             type: date
             doc: The date the author was born
           - name: author_id
-            type: bigint
+            type: long
             doc: Unique identifier for this author
 
   GlueJobRole:
