@@ -25,8 +25,7 @@ def save_books(books: DataFrame, glue_context: GlueContext):
     )
     # Is there a way to remove the need to do this?
     df = DynamicFrame.fromDF(books, glue_context, "books")
-    glue_context.write_dynamic_frame_from_catalog(
-        df, "glue_reference", "raw_books")
+    glue_context.write_dynamic_frame_from_catalog(df, "glue_reference", "raw_books")
 
 
 def main(glue_context: GlueContext):

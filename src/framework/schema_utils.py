@@ -7,9 +7,6 @@ def coerce_to_schema(df: DataFrame, schema: StructType):
     result = df.select(schema.fieldNames())
 
     for field in schema.fields:
-        result = result.withColumn(
-            field.name,
-            result[field.name].cast(field.dataType)
-        )
+        result = result.withColumn(field.name, result[field.name].cast(field.dataType))
 
     return result
