@@ -2,8 +2,7 @@ import pytest
 
 from framework.schema_utils import coerce_to_schema
 from framework import DataFrameMatcher
-from pyspark.sql import DataFrame, Row
-from pyspark.sql.context import SparkSession
+from pyspark.sql import DataFrame, Row, SparkSession
 from pyspark.sql.types import (
     StructType,
     StructField,
