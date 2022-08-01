@@ -37,12 +37,19 @@ def test_removes_extra_columns(test_df: DataFrame):
 
 def test_coerces_struct_types(spark_session: SparkSession):
     df = spark_session.createDataFrame(
-        [{"struct_field": {"value_field": 42}}],
+        [{"struct_field": {"nested_struct_field": {"value_field": 42}}}],
         schema=StructType(
             [
                 StructField(
                     "struct_field",
-                    StructType([StructField("value_field", IntegerType())]),
+                    StructType(
+                        [
+                            StructField(
+                                "nested_struct_field",
+                                StructType([StructField("value_field", IntegerType())]),
+                            )
+                        ]
+                    ),
                 )
             ]
         ),
@@ -53,18 +60,29 @@ def test_coerces_struct_types(spark_session: SparkSession):
         StructType(
             [
                 StructField(
-                    "struct_field", StructType([StructField("value_field", LongType())])
+                    "struct_field",
+                    StructType(
+                        [
+                            StructField(
+                                "nested_struct_field",
+                                StructType([StructField("value_field", LongType())]),
+                            )
+                        ]
+                    ),
                 )
             ]
         ),
     )
 
     struct_type: StructType = result.schema["struct_field"].dataType
-    value_type = struct_type["value_field"].dataType
+    nested_struct_type: StructType = struct_type["nested_struct_field"].dataType
+    value_type = nested_struct_type["value_field"].dataType
 
     result.show(truncate=False)
     assert isinstance(value_type, LongType)
-    assert result == DataFrameMatcher([{"struct_field": Row(value_field=42)}])
+    assert result == DataFrameMatcher(
+        [{"struct_field": Row(nested_struct_field=Row(value_field=42))}]
+    )
 
 
 def test_coerces_array_types(spark_session: SparkSession):
