@@ -1,4 +1,3 @@
-from ast import alias
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
@@ -49,9 +48,6 @@ def main(glue_context: GlueContext):
         to_date(col("a.birth_date"), "yyyy-MM-dd").alias("author_birth_date"),
         col("a.id").alias("author_id"),
     )
-
-    joined.printSchema()
-    joined.show()
     save_books(joined, glue_context)
 
 
