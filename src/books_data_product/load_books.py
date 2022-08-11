@@ -40,15 +40,15 @@ def main(glue_context: GlueContext):
 
     authors = load_authors(glue_context)
     authors.printSchema()
-    joined = books \
-        .join(authors.alias('a'), books.author == authors.name, "left_outer") \
-        .select(
-            'title',
-            to_date(col("publish_date"), "yyyy-MM-dd").alias("publish_date"),
-            col('author').alias('author_name'),
-            to_date(col("a.birth_date"), "yyyy-MM-dd").alias("author_birth_date"),
-            col('a.id').alias('author_id')
-        )
+    joined = books.join(
+        authors.alias("a"), books.author == authors.name, "left_outer"
+    ).select(
+        "title",
+        to_date(col("publish_date"), "yyyy-MM-dd").alias("publish_date"),
+        col("author").alias("author_name"),
+        to_date(col("a.birth_date"), "yyyy-MM-dd").alias("author_birth_date"),
+        col("a.id").alias("author_id"),
+    )
 
     joined.printSchema()
     joined.show()
