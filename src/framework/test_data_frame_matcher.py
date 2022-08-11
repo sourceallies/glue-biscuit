@@ -1,20 +1,5 @@
-from pyspark import SparkContext
-import pytest
-from pyspark.sql import SparkSession, SparkSession, DataFrame
-from awsglue import DynamicFrame
+from pyspark.sql import SparkSession, DataFrame
 from framework.data_frame_matcher import DataFrameMatcher
-
-
-@pytest.fixture(scope="session")
-def spark_context():
-    # TODO: move me when the fixtures is merged
-    spark = SparkSession.builder.master("local[1]").getOrCreate()
-    yield spark.sparkContext
-
-
-@pytest.fixture()
-def spark_session(spark_context: SparkContext):
-    yield SparkSession(spark_context)
 
 
 def test_equal_when_one_row_column(spark_session: SparkSession):
