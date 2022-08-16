@@ -10,17 +10,19 @@
         },
         {
             "name": "publish_date",
-            "type": "date",
+            "type": "int",
+            "logicalType": "date",
             "doc": "The date this book was first published"
         },
         {
             "name": "author_name",
             "type": "string",
-            "doc": "The full name of the author"
+            "doc": "The author's full name"
         },
         {
             "name": "author_birth_date",
-            "type": "date",
+            "type": "int",
+            "logicalType": "date",
             "doc": "The date the author was born"
         },
         {

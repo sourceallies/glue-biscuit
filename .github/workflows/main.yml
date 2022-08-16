@@ -49,8 +49,10 @@ jobs:
 
       - name: Upload
         run: |
+          set -e
           cd ./src;
           zip -r - ./* | aws s3 cp - "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/${GITHUB_SHA}.zip"
+          ./upload-schema-include.sh books_data_product/books-schema.json
 
       - name: Deploy
         run: |

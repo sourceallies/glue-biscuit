@@ -37,6 +37,11 @@ run-glue-container:
 		--entrypoint=bash \
 		amazon/aws-glue-libs:glue_libs_3.0.0_image_01
 
+upload-cfn-artifacts:
+	cd ./src && \
+	zip -r - ./* | aws s3 cp - "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/$${GITHUB_SHA}.zip" && \
+	./upload-schema-include.sh books_data_product/books-schema.json
+
 save-aws-credentials:
 	@aws configure set --profile=$(profile) aws_access_key_id $(AWS_ACCESS_KEY_ID)
 	@aws configure set --profile=$(profile) aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)

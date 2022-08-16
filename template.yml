@@ -5,6 +5,10 @@ Parameters:
   GitHash:
     Type: String
 
+  ArtifactBucket:
+    Type: String
+    Default: aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo
+
 Resources:
   DataBucket:
     Type: AWS::S3::Bucket
@@ -50,35 +54,40 @@ Resources:
       Name: glue_reference
       Description: Glue reference schemas
 
-  BookSchema:
-    Type: AWS::Glue::Schema
-    Properties: 
-      Registry:
-        Arn: !Ref SchemaRegistry
-      Name: Book
-      Compatibility: NONE #TODO: Change this to something real
-      DataFormat: AVRO
-      # is inplace good here, or would
-      SchemaDefinition: !ToJsonString:
-        type: record
-        namespace: glue_reference
-        name: Book
-        fields:
-          - name: title
-            type: string
-            doc: Full title of this book
-          - name: publish_date
-            type: date
-            doc: The date this book was first published
-          - name: author_name
-            type: string
-            doc: The full name of the author
-          - name: author_birth_date
-            type: date
-            doc: The date the author was born
-          - name: author_id
-            type: long
-            doc: Unique identifier for this author
+  # BookSchema:
+  #   Type: AWS::Glue::Schema
+  #   Properties: 
+  #     Registry:
+  #       Arn: !Ref SchemaRegistry
+  #     Name: Book
+  #     CheckpointVersion:
+  #       VersionNumber: 2
+  #     Compatibility: NONE #TODO: Change this to something real
+  #     DataFormat: AVRO
+  #     'Fn::Transform':
+  #       Name: 'AWS::Include'
+  #       Parameters:
+  #         Location: !Sub "s3://${ArtifactBucket}/schemas/books-schema.${GitHash}.json"
+
+  BooksTable:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref Database
+      TableInput: 
+        Name: books
+        Description: Stores output dataset
+        StorageDescriptor:
+          Location: !Sub "s3://${DataBucket}/products/books"
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          Parameters:
+            classification: parquet
+          # SchemaReference:
+          #   SchemaId:
+          #     SchemaArn: !GetAtt BookSchema.Arn
 
   GlueJobRole:
     Type: AWS::IAM::Role
@@ -141,6 +150,7 @@ Resources:
       Role: !Ref GlueJobRole
       DefaultArguments:
         "--source_bucket": !Ref DataBucket
-        "--extra-py-files": !Sub "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/${GitHash}.zip"
+        "--extra-py-files": !Sub "s3://${ArtifactBucket}/etl-files/${GitHash}.zip"
       MaxRetries: 0
 
+Outputs: {}
