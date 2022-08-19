@@ -4,7 +4,7 @@ from awsglue.context import GlueContext
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
-from framework import (
+from framework.test import (
     DataFrameMatcher,
     DynamicFrameMatcher,
     spark_context,
