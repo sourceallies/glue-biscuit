@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession, DataFrame
-from framework.data_frame_matcher import DataFrameMatcher
+from framework.test.data_frame_matcher import DataFrameMatcher
 
 
 def test_equal_when_one_row_column(spark_session: SparkSession):
