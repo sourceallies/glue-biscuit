@@ -125,7 +125,7 @@ Resources:
               Type: date
               Comment: The date the author was born
             - Name: author_id
-              Type: long
+              Type: bigint
               Comment: Unique identifier for this author
 
   LoadBooksJob:
