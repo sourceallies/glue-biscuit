@@ -3,8 +3,8 @@ import pytest
 from pyspark.sql import SparkSession, SparkSession, DataFrame
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
-from framework.fixtures import mock_glue_context, spark_context
-from framework.dynamic_frame_matcher import DynamicFrameMatcher
+from framework.test.fixtures import mock_glue_context, spark_context
+from framework.test.dynamic_frame_matcher import DynamicFrameMatcher
 
 
 @pytest.fixture()

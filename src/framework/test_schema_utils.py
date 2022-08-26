@@ -1,7 +1,7 @@
 import pytest
 
 from framework.schema_utils import coerce_to_schema, schema_from_cloudformation
-from framework import DataFrameMatcher
+from framework.test import DataFrameMatcher
 from pyspark.sql import DataFrame, Row, SparkSession
 from pyspark.sql.types import (
     StructType,
