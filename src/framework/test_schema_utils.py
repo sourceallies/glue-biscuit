@@ -17,6 +17,8 @@ from pyspark.sql.types import (
     DecimalType,
 )
 
+test_template_path = "./test_data/test_template.yml"
+
 
 @pytest.fixture
 def test_df(spark_session: SparkSession) -> DataFrame:
@@ -115,7 +117,7 @@ def test_coerces_binary_incompatible_types(test_df: DataFrame):
 
 
 def test_schema_from_cloudformation_parses_string():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "title"
@@ -124,7 +126,7 @@ def test_schema_from_cloudformation_parses_string():
 
 
 def test_schema_from_cloudformation_parses_tinyint():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "author_age"
@@ -133,7 +135,7 @@ def test_schema_from_cloudformation_parses_tinyint():
 
 
 def test_schema_from_cloudformation_parses_smallint():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "puddles"
@@ -142,7 +144,7 @@ def test_schema_from_cloudformation_parses_smallint():
 
 
 def test_schema_from_cloudformation_parses_int():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "kangaroos_in_australia"
@@ -151,7 +153,7 @@ def test_schema_from_cloudformation_parses_int():
 
 
 def test_schema_from_cloudformation_parses_long():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "trees_in_world"
@@ -160,7 +162,7 @@ def test_schema_from_cloudformation_parses_long():
 
 
 def test_schema_from_cloudformation_parses_date():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "publish_date"
@@ -169,7 +171,7 @@ def test_schema_from_cloudformation_parses_date():
 
 
 def test_schema_from_cloudformation_parses_timestamp():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "author_time"
@@ -178,7 +180,7 @@ def test_schema_from_cloudformation_parses_timestamp():
 
 
 def test_schema_from_cloudformation_parses_decimal():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "royalties_owed"
@@ -190,7 +192,7 @@ def test_schema_from_cloudformation_parses_decimal():
 
 
 def test_schema_from_cloudformation_parses_struct():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [field for field in fields if field.name == "pet"][
         0
@@ -204,7 +206,7 @@ def test_schema_from_cloudformation_parses_struct():
 
 
 def test_schema_from_cloudformation_parses_array():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "stats"
@@ -215,7 +217,7 @@ def test_schema_from_cloudformation_parses_array():
 
 
 def test_schema_from_cloudformation_parses_array_of_structs():
-    schema = schema_from_cloudformation("./test_template.yml", "test_table")
+    schema = schema_from_cloudformation(test_template_path, "test_table")
     fields = schema.fields
     field_under_test: StructField = [
         field for field in fields if field.name == "metadata"
