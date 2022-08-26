@@ -23,7 +23,7 @@ run-unit-tests:
 		-e DISABLE_SSL=true \
 		-e PYTHONPATH='/home/glue_user/aws-glue-libs/PyGlue.zip:/home/glue_user/spark/python/lib/py4j-0.10.9-src.zip:/home/glue_user/spark/python/:/work/src' \
 		-w /work \
-		--entrypoint=pytest \
+		--entrypoint=/home/glue_user/.local/bin/pytest \
 		amazon/aws-glue-libs:glue_libs_3.0.0_image_01
 
 run-glue-container:
