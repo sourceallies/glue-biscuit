@@ -8,42 +8,7 @@ Parameters:
 Resources:
   DataBucket:
     Type: AWS::S3::Bucket
-
-  Database:
-    Type: AWS::Glue::Database
-    Properties: 
-      CatalogId: !Ref AWS::AccountId
-      DatabaseInput:
-        Description: Defines the glue reference datasets
-        Name: glue_reference
-
-  RawBooksTable:
-    Type: AWS::Glue::Table
-    Properties: 
-      CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Ref Database
-      TableInput: 
-        Name: raw_books
-        Description: Stores output dataset
-        StorageDescriptor:
-          Location: !Sub "s3://${DataBucket}/raw/books"
-          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
-          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
-          SerdeInfo:
-            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-          Parameters:
-            classification: parquet
-          Columns:
-            - Name: title
-              Type: string
-              Comment: Full title of this book
-            - Name: publish_date
-              Type: date
-              Comment: The date this book was first published
-            - Name: author_name
-              Type: string
-              Comment: The full name of the author
-
+  
   GlueJobRole:
     Type: AWS::IAM::Role
     Properties:
@@ -82,6 +47,41 @@ Resources:
                 Resource:
                   - "*"
 
+  Database:
+    Type: AWS::Glue::Database
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: Defines the glue reference datasets
+        Name: glue_reference
+
+  RawBooksTable:
+    Type: AWS::Glue::Table
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref Database
+      TableInput: 
+        Name: raw_books
+        Description: Stores output dataset
+        StorageDescriptor:
+          Location: !Sub "s3://${DataBucket}/raw/books"
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          Parameters:
+            classification: parquet
+          Columns:
+            - Name: title
+              Type: string
+              Comment: Full title of this book
+            - Name: publish_date
+              Type: date
+              Comment: The date this book was first published
+            - Name: author_name
+              Type: string
+              Comment: The full name of the author
+
   LoadRawBooksJob:
     Type: AWS::Glue::Job
     Properties:
@@ -89,6 +89,52 @@ Resources:
       Command:
         Name: glueetl
         ScriptLocation: ./src/simple_job/load_books.py
+      Role: !Ref GlueJobRole
+      DefaultArguments:
+        "--source_bucket": !Ref DataBucket
+        "--extra-py-files": !Sub "s3://aws-sam-cli-managed-default-samclisourcebucket-9k9zwqsha4fo/etl-files/${GitHash}.zip"
+      MaxRetries: 0
+
+  BooksTable:
+    Type: AWS::Glue::Table
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref Database
+      TableInput: 
+        Name: books
+        Description: Books data product
+        StorageDescriptor:
+          Location: !Sub "s3://${DataBucket}/books"
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          Parameters:
+            classification: parquet
+          Columns:
+            - Name: title
+              Type: string
+              Comment: Full title of this book
+            - Name: publish_date
+              Type: date
+              Comment: The date this book was first published
+            - Name: author_name
+              Type: string
+              Comment: The full name of the author
+            - Name: author_birth_date
+              Type: date
+              Comment: The date the author was born
+            - Name: author_id
+              Type: bigint
+              Comment: Unique identifier for this author
+
+  LoadBooksJob:
+    Type: AWS::Glue::Job
+    Properties:
+      GlueVersion: "3.0"
+      Command:
+        Name: glueetl
+        ScriptLocation: ./src/books_data_product/load_books.py
       Role: !Ref GlueJobRole
       DefaultArguments:
         "--source_bucket": !Ref DataBucket
