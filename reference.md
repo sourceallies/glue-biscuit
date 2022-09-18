@@ -78,3 +78,161 @@ By breaking the job down, We can now independently test each Data Source functio
 We can then test that the Data Sinks will call the appropriate Glue APIs correctly.
 Given that the Sources and Sinks are tested as correct, they can be mocked out when testing the main function.
 This mocking allows the test cases to provide different inputs to the job and execute all the code paths and testing scenerios of the main function.
+
+## Testing
+
+### Unit Testing
+
+In order to Unit Test Glue jobs, we recommend trying to execute as much of the Glue and Spark code as possible. 
+This is because most real world jobs are highly dependent on using various Spark methods in order to perform their task.
+If we were to mock these methods and only test the code that is physically in the job file then we would be relying on many assumtpions about the behavior of Spark. 
+In addtion, our tests would be very tightly coupled to the implementation of the job.
+Making the tests brittle as the job evolves over time.
+
+We test each source, sink, and the main method individually.
+
+
+In order to test the source methods, we need to provide it an implementation of `GlueContext` that does not attempt to call out to the network.
+The `framework.test` module provides a `mock_glue_context` fixture that can be imported and referenced.
+
+Most source methods also use job arguments for various runtime parameters. 
+The Glue provided `getResolvedOptions` can be mocked, however this method is tricky to mock and actually pretty inconvient to use. 
+Instead, we recommend using the framework provided `get_job_argument` or `get_job_arguments` functions. 
+The `get_job_argument` function takes a string and returns the value of that argument. 
+The plural form `get_job_arguments` takes any number of argument names as parameters and returns a tuple with the values in order.
+We can then simply mock one of these methods and return the appropriate value.
+
+Here is an example unit test for a source function:
+```Python
+from framework.test import mock_glue_context
+
+@patch("simple_job.load_books.get_job_argument")
+def test_load_books(mock_get_job_argument: Mock, mock_glue_context: GlueContext):
+    mock_get_job_argument.return_value = "mock_bucket"
+    mock_data = mock_glue_context.create_dynamic_frame_from_rdd(
+        mock_glue_context.spark_session.sparkContext.parallelize([{"a": 1}]),
+        "sample input",
+    )
+    mock_glue_context.create_dynamic_frame_from_options.return_value = mock_data
+
+    actualDF = load_books(mock_glue_context)
+
+    mock_get_job_arguments.assert_called_with("source_bucket")
+    mock_glue_context.create_dynamic_frame_from_options.assert_called_with(
+        connection_type="s3",
+        connection_options={"paths": ["s3://mock_bucket/sample_data/json/books"]},
+        format="json",
+    )
+    expectedData = [{"a": 1}]
+    assert type(actualDF) is DataFrame
+    assert [row.asDict() for row in actualDF.collect()] == expectedData
+```
+
+Data sink functions are tested in much the same way as source functions.
+In order to test that the appropriate data was passed to one of the `GlueContext` write methods, the framework provides a `DynamicFrameMatcher` class.
+
+Here is an example sink function test:
+```Python
+def test_save_books(mock_glue_context: GlueContext):
+    book_df = mock_glue_context.spark_session.createDataFrame(
+        [
+            {
+                "title": "t",
+                "publish_date": date.fromisoformat("2022-02-04"),
+                "author_name": "a",
+            }
+        ]
+    )
+
+    save_books(book_df, mock_glue_context)
+
+    mock_glue_context.purge_table.assert_called_with(
+        "glue_reference", "raw_books", options={"retentionPeriod": 0}
+    )
+    mock_glue_context.write_dynamic_frame_from_catalog.assert_called_with(
+        DynamicFrameMatcher(
+            [
+                {
+                    "title": "t",
+                    "publish_date": date.fromisoformat("2022-02-04"),
+                    "author_name": "a",
+                }
+            ]
+        ),
+        "glue_reference",
+        "raw_books",
+    )
+    purge_table_index = mock_glue_context.mock_calls.index(
+        call.purge_table(ANY, ANY, options=ANY)
+    )
+    write_index = mock_glue_context.mock_calls.index(
+        call.write_dynamic_frame_from_catalog(ANY, ANY, ANY)
+    )
+    assert purge_table_index < write_index
+```
+
+Most source and sink functions will only have a couple of test cases.
+They are, by design, very simple functions and mostly serve to hide the specifics of how data is loaded and stored.
+They also allow us to individually mock them and return different values when testing the main method.
+Without these functions we would have to mock `GlueContext.create_dynamic_frame_from_options` and dynamically return different test data for each invocation.
+
+The sink tests needed to asser the correct DyanmicFrame was passed to Glue.
+The main function tests will need to asser that the correct DataFrame was passed to the sinks.
+For this purpose the framework provides the `DataFrameMatcher` class.
+
+Here is a simple example of a test that mocks two sources and a sink and then tests the main method properly joins a single row.
+
+```Python
+@patch("books_data_product.load_books.load_books")
+@patch("books_data_product.load_books.load_authors")
+@patch("books_data_product.load_books.save_books")
+def test_main_joins_and_writes_a_row(
+    mock_save_books: Mock,
+    mock_load_authors: Mock,
+    mock_load_books: Mock,
+    mock_glue_context: GlueContext,
+):
+    spark = mock_glue_context.spark_session
+    mock_load_books.return_value = spark.createDataFrame(
+        [{"title": "t", "publish_date": "2022-02-04", "author": "a"}]
+    )
+    mock_load_authors.return_value = spark.createDataFrame(
+        [{"name": "a", "id": 34, "birth_date": "1994-04-03"}]
+    )
+
+    main(mock_glue_context)
+
+    mock_load_books.assert_called_with(mock_glue_context)
+    mock_load_authors.assert_called_with(mock_glue_context)
+    mock_save_books.assert_called_with(
+        DataFrameMatcher(
+            [
+                {
+                    "title": "t",
+                    "publish_date": date.fromisoformat("2022-02-04"),
+                    "author_name": "a",
+                    "author_birth_date": date.fromisoformat("1994-04-03"),
+                    "author_id": 34,
+                }
+            ]
+        ),
+        mock_glue_context,
+    )
+```
+
+With these basics in place, test files can iterate on different inputs to the main function (via mocks) and then assert the various sinks. 
+Pytest fixtures can be extracted as needed to create test `DataFrame`s
+
+In order to execute these tests, Glue, Pyspark, and Pytest all must be present. 
+Fortunatly there is a Docker image provided by AWS that contains a full Glue runtime.
+We can simply launch this container and use it to execute tests like so:
+
+```bash
+docker run \
+    -v "$$(pwd):/work" \
+    -w /work \
+    -e DISABLE_SSL=true \
+    -e PYTHONPATH='/home/glue_user/aws-glue-libs/PyGlue.zip:/home/glue_user/spark/python/lib/py4j-0.10.9-src.zip:/home/glue_user/spark/python/:/work/src' \
+    --entrypoint=/home/glue_user/.local/bin/pytest \
+    amazon/aws-glue-libs:glue_libs_3.0.0_image_01
+```
