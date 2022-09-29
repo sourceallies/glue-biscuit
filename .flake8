@@ -1,3 +1,0 @@
-[flake8]
-select = B,B9,BLK,C,E,F,I,S,W
-per-file-ignores = src/*:E501,S101
