@@ -25,7 +25,7 @@ def test_df(spark_session: SparkSession) -> DataFrame:
 
 @pytest.fixture
 def test_dyf(test_df: DataFrame, spark_context: SparkContext) -> DataFrame:
-    return DynamicFrame.fromDF(test_df, GlueContext(spark_context), 'test_dyf')
+    return DynamicFrame.fromDF(test_df, GlueContext(spark_context), "test_dyf")
 
 
 def test_coerces_single_column(test_df: DataFrame):
@@ -129,35 +129,41 @@ def test_schema_coerces_data_frame_from_schema_function(test_df):
     assert test_df == DataFrameMatcher([{"x": 1}, {"x": 2}])
 
 
-@patch('framework.schema_utils.GlueContext')
+@patch("framework.schema_utils.GlueContext")
 def test_source_gets_table_from_glue(mock_glue_context_class: Mock):
-    mock_glue_context = Mock(name='GlueContext')
+    mock_glue_context = Mock(name="GlueContext")
     mock_glue_context_class.return_value = mock_glue_context
 
-    @source('some_db', 'some_table', schema_obj=StructType([StructField("x", LongType())]))
+    @source(
+        "some_db", "some_table", schema_obj=StructType([StructField("x", LongType())])
+    )
     def test_func(frame):
         pass
+
     test_func()
 
     mock_glue_context.assert_called_once_with(
-        database='some_db',
-        table_name='some_table',
-        transformation_ctx="source-some_db-some_table"
+        database="some_db",
+        table_name="some_table",
+        transformation_ctx="source-some_db-some_table",
     )
 
 
-@patch('framework.schema_utils.GlueContext')
-def test_source_gets_table_from_glue(mock_glue_context_class: Mock, test_dyf: DynamicFrame):
-    mock_glue_context: DynamicFrame = Mock(name='GlueContext')
+@patch("framework.schema_utils.GlueContext")
+def test_source_gets_table_from_glue(
+    mock_glue_context_class: Mock, test_dyf: DynamicFrame
+):
+    mock_glue_context: DynamicFrame = Mock(name="GlueContext")
     mock_glue_context.create_dynamic_frame_from_catalog.return_value = test_dyf
     mock_glue_context_class.return_value = mock_glue_context
 
-    @source('some_db', 'some_table', schema_obj=StructType([StructField("x", LongType())]))
+    @source(
+        "some_db", "some_table", schema_obj=StructType([StructField("x", LongType())])
+    )
     def test_func(frame):
         return frame
 
     result = test_func()
-
 
     assert isinstance(result.schema["x"].dataType, LongType)
     assert result == DataFrameMatcher([{"x": 1}, {"x": 2}])

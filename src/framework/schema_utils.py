@@ -50,6 +50,7 @@ def schema(*, schema_obj=None, schema_func=None):
     """
     Takes a pyspark schema or a function resulting in a pyspark schema and coerces the input frame to match this schema.
     """
+
     def annotation_func(func):
         @wraps(func)
         def wrapper_func(*args, **kwargs):
@@ -73,7 +74,7 @@ def source(database: str, table: str, schema_obj=None, schema_func=None):
             dyn_frame = glue_context.create_dynamic_frame_from_catalog(
                 database=database,
                 table_name=table,
-                transformation_ctx=f"source-{database}-{table}"
+                transformation_ctx=f"source-{database}-{table}",
             )
             df = dyn_frame.toDF()
             fitted_frame = coerce_to_schema(df, final_schema)
