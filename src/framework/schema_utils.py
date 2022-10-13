@@ -113,6 +113,7 @@ def schema_from_cloudformation(path_to_template: str, table_name: str) -> Struct
         )
     )
 
+
 def __coalesce(*args):
     for arg in args:
         if arg is not None:

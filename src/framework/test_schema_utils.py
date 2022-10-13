@@ -241,6 +241,8 @@ def test_schema_from_cloudformation_parses_array_of_structs():
         StructField("key", StringType()),
         StructField("value", StringType()),
     ]
+
+
 @schema(schema_obj=StructType([StructField("x", LongType())]))
 def test_schema_coerces_data_frame_from_schema_object(test_df):
     assert isinstance(test_df.schema["x"].dataType, LongType)
