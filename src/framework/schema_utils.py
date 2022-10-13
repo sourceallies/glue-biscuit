@@ -1,4 +1,3 @@
-from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.types import StructType
@@ -32,15 +31,11 @@ def __get_schema_args(*args):
 def __force_frame_to_fit(schema, *args, **kwargs):
     new_args = [*args]
     for i in range(len(args)):
-        if isinstance(new_args[i], DynamicFrame):
-            new_args[i] = new_args[i].toDF()
         if isinstance(new_args[i], DataFrame):
             new_args[i] = coerce_to_schema(new_args[i], schema)
 
     new_kwargs = {**kwargs}
     for k, _ in new_kwargs.items():
-        if isinstance(new_kwargs[k], DynamicFrame):
-            new_kwargs[k] = new_kwargs[k].toDF()
         if isinstance(new_kwargs[k], DataFrame):
             new_kwargs[k] = coerce_to_schema(new_kwargs[k], schema)
     return new_args, new_kwargs
