@@ -48,12 +48,3 @@
     1. Creating a single file with a predictable name
     1. Improving Job Performance
     1. Only processing un-processed data
-    
-
-
-## TODOS:
-- Hack together the sample job to just get it working locally in container
-- Define the example job output schema
-- Take a first cut at the "job structure" question
-- Redo the job with TDD to validate testing strategy
-- 
