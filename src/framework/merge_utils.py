@@ -10,6 +10,13 @@ def create_merge_function(
     """
     Builds and returns a merge function.
     This funtion has the signature (a: DataFrame, b: DataFrame) -> DataFrame
+
+    key_fields : List[str]
+        A list of fields that uniquely identify the entity being managed
+    sort_field : str
+        A field (usually a timestamp) to use for determining what record to keep. The record with the greatest value is retained.
+    deleted_field : str
+        The field to use as a deleted indicator. If this is True then the row is considered a delete marker.
     """
     window = Window.partitionBy(key_fields).orderBy(col(sort_field).desc())
 
