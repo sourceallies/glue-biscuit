@@ -49,12 +49,6 @@
     1. Improving Job Performance
     1. Only processing un-processed data
 
-## TODOS:
-- Hack together the sample job to just get it working locally in container
-- Define the example job output schema
-- Take a first cut at the "job structure" question
-- Redo the job with TDD to validate testing strategy
-
 # Reprocessing Data
 
 Reprocessing data within a data lake presents certain challenges. If you think of your traditional bronze/silver/gold data lake architecture, this will only apply to the silver and gold layers. The bronze layer should never be modified to allow re-creation of the more curated levels.
