@@ -21,7 +21,7 @@ def record_schema():
             StructField("id", IntegerType(), False),
             StructField("value", StringType(), False),
             StructField("_as_of", TimestampType(), False),
-            StructField("_deleted", BooleanType(), False),
+            StructField("_deleted", BooleanType(), True),
         ]
     )
 
@@ -41,14 +41,13 @@ def test_merge_single_to_empty(spark_session: SparkSession, record_schema: Struc
         "id": 1,
         "value": "a",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:00"),
-        "_deleted": False,
     }
     a = spark_session.createDataFrame([record], record_schema)
     b = spark_session.createDataFrame([], record_schema)
     merged = merge_and_retain_last(
         a, b, key_fields=["id"], sort_field="_as_of", deleted_field="_deleted"
     )
-
+    merged.show()
     assert DataFrameMatcher([record]) == merged
 
 
@@ -57,7 +56,6 @@ def test_empty_to_single(spark_session: SparkSession, record_schema: StructType)
         "id": 1,
         "value": "a",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:00"),
-        "_deleted": False,
     }
     a = spark_session.createDataFrame([], record_schema)
     b = spark_session.createDataFrame([record], record_schema)
@@ -75,7 +73,6 @@ def test_same_record_in_both_sets(
         "id": 1,
         "value": "a",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:00"),
-        "_deleted": False,
     }
     a = spark_session.createDataFrame([record], record_schema)
     b = spark_session.createDataFrame([record], record_schema)
@@ -91,13 +88,11 @@ def test_record_overwritten(spark_session: SparkSession, record_schema: StructTy
         "id": 1,
         "value": "b",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:01"),
-        "_deleted": False,
     }
     record_b = {
         "id": 1,
         "value": "b",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:00"),
-        "_deleted": False,
     }
     merged = merge_and_retain_last(
         spark_session.createDataFrame([record_a], record_schema),
@@ -115,13 +110,11 @@ def test_old_record_passed_in(spark_session: SparkSession, record_schema: Struct
         "id": 1,
         "value": "a",
         "_as_of": datetime.fromisoformat("2020-01-01T09:40:00"),
-        "_deleted": False,
     }
     record_b = {
         "id": 1,
         "value": "b",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:00"),
-        "_deleted": False,
     }
     merged = merge_and_retain_last(
         spark_session.createDataFrame([record_a], record_schema),
@@ -145,7 +138,6 @@ def test_record_deleted(spark_session: SparkSession, record_schema: StructType):
         "id": 1,
         "value": "b",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:00"),
-        "_deleted": False,
     }
     merged = merge_and_retain_last(
         spark_session.createDataFrame([record_a], record_schema),
@@ -165,19 +157,16 @@ def test_correct_record_is_updated(
         "id": 1,
         "value": "a",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:01"),
-        "_deleted": False,
     }
     record_a2 = {
         "id": 2,
         "value": "a",
         "_as_of": datetime.fromisoformat("2020-01-01T10:00:01"),
-        "_deleted": False,
     }
     record_b = {
         "id": 1,
         "value": "b",
         "_as_of": datetime.fromisoformat("2020-01-01T10:01:00"),
-        "_deleted": False,
     }
     merged = merge_and_retain_last(
         spark_session.createDataFrame([record_b], record_schema),

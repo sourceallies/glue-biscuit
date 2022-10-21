@@ -30,3 +30,4 @@ This is the logical algorithm to process this data:
 1. Write out the output to the target.
 1. Purge data from the target that existed prior to the job run.
 
+In order to help with the execution of the above algorithm, we provide a [merge_and_retain_last](src/framework/merge_utils.py) function to help with the middle steps between adding a `_deleted` column and dropping it. 

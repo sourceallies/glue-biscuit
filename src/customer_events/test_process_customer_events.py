@@ -53,7 +53,7 @@ def event_schema():
     return StructType(
         [
             StructField("before", row_schema, True),
-            StructField("after", row_schema, True), 
+            StructField("after", row_schema, True),
             StructField("ts_ms", LongType(), False),
         ]
     )
@@ -92,7 +92,7 @@ def test_main_creates_new_customer(
                 "ts_ms": 1486500577000,
             }
         ],
-        event_schema
+        event_schema,
     )
     mock_load_customers.return_value = empty_customer_dataframe
 
@@ -125,6 +125,7 @@ def test_main_updates_customer(
     mock_load_events: Mock,
     mock_glue_context: GlueContext,
     event_schema: StructType,
+    customer_schema: StructType,
 ):
     spark = mock_glue_context.spark_session
     mock_load_customers.return_value = spark.createDataFrame(
@@ -137,7 +138,7 @@ def test_main_updates_customer(
                 "_as_of": datetime.fromisoformat("2017-02-07T20:49:37.691"),
             }
         ],
-        event_schema
+        customer_schema,
     )
     mock_load_events.return_value = spark.createDataFrame(
         [
@@ -152,7 +153,7 @@ def test_main_updates_customer(
                 "ts_ms": 1486500588691,
             }
         ],
-        event_schema
+        event_schema,
     )
 
     main(mock_glue_context)
@@ -211,7 +212,7 @@ def test_main_handles_new_customer_with_multiple_events(
                 "ts_ms": 1486500588691,
             },
         ],
-        event_schema
+        event_schema,
     )
 
     main(mock_glue_context)
@@ -243,6 +244,7 @@ def test_main_removes_deleted_customer(
     mock_load_events: Mock,
     mock_glue_context: GlueContext,
     event_schema: StructType,
+    customer_schema: StructType,
 ):
     spark = mock_glue_context.spark_session
     mock_load_customers.return_value = spark.createDataFrame(
@@ -255,7 +257,7 @@ def test_main_removes_deleted_customer(
                 "_as_of": datetime.fromisoformat("2017-02-07T20:49:37.691"),
             }
         ],
-        event_schema
+        customer_schema,
     )
     mock_load_events.return_value = spark.createDataFrame(
         [
@@ -270,7 +272,7 @@ def test_main_removes_deleted_customer(
                 "ts_ms": 1486500588691,
             }
         ],
-        event_schema
+        event_schema,
     )
 
     main(mock_glue_context)
