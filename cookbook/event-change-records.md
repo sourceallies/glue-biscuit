@@ -14,6 +14,7 @@ There are several corner cases that have to be handled properly in order for thi
 In order to support this pattern, both input and target records must satisfy a couple criteria:
 - Each record must have a set of columns that uniquely identify the entity that is being manipulated. This is typically the columns that are the primary key in the source.
 - Each record must have a timestamp that orders the mutations.
+- Opitonally, to support deletes, each record needs a way to identify that it is a delete.
 
 This is the logical algorithm to process this data:
 1. New records are loaded from the source (usually via a Bookmark)
@@ -22,7 +23,7 @@ This is the logical algorithm to process this data:
 1. Add a `_deleted` column to the target with a value of `false`
 1. Union the source and target
 1. Execute a group-by on the primary key columns.
-1. For each group, reduce the group by selecting the record with the larges timestamp. (most current record)
+1. For each group, reduce the group by selecting the record with the largest timestamp (most current record). 
 1. This resulting dataset now has exactly one record per entity
 1. Filter out any records with a `_deleted` flag that is `true`
 1. Drop the `_deleted` column.

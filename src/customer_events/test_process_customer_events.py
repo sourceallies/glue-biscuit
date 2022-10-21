@@ -7,6 +7,8 @@ from pyspark.sql.types import (
     StringType,
     TimestampType,
     IntegerType,
+    LongType,
+    MapType,
 )
 from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
@@ -39,6 +41,25 @@ def customer_schema():
 
 
 @pytest.fixture
+def event_schema():
+    row_schema = StructType(
+        [
+            StructField("id", IntegerType(), True),
+            StructField("first_name", StringType(), True),
+            StructField("last_name", StringType(), True),
+            StructField("email", StringType(), True),
+        ]
+    )
+    return StructType(
+        [
+            StructField("before", row_schema, True),
+            StructField("after", row_schema, True), 
+            StructField("ts_ms", LongType(), False),
+        ]
+    )
+
+
+@pytest.fixture
 def empty_customer_dataframe(
     mock_glue_context: GlueContext, customer_schema: StructType
 ):
@@ -55,23 +76,23 @@ def test_main_creates_new_customer(
     mock_load_events: Mock,
     mock_glue_context: GlueContext,
     empty_customer_dataframe: DataFrame,
+    event_schema: StructType,
 ):
     spark = mock_glue_context.spark_session
     mock_load_events.return_value = spark.createDataFrame(
         [
             {
-                "payload": {
-                    "before": None,
-                    "after": {
-                        "id": 1004,
-                        "first_name": "Anne",
-                        "last_name": "Kretchmar",
-                        "email": "annek@noanswer.org",
-                    },
-                    "ts_ms": 1486500577691,
-                }
+                "before": None,
+                "after": {
+                    "id": 1004,
+                    "first_name": "Anne",
+                    "last_name": "Kretchmar",
+                    "email": "annek@noanswer.org",
+                },
+                "ts_ms": 1486500577000,
             }
-        ]
+        ],
+        event_schema
     )
     mock_load_customers.return_value = empty_customer_dataframe
 
@@ -87,7 +108,7 @@ def test_main_creates_new_customer(
                     "first_name": "Anne",
                     "last_name": "Kretchmar",
                     "email": "annek@noanswer.org",
-                    "_as_of": datetime.fromisoformat("2017-02-07T20:49:37.691"),
+                    "_as_of": datetime.fromisoformat("2017-02-07T20:49:37.000"),
                 }
             ]
         ),
@@ -103,6 +124,7 @@ def test_main_updates_customer(
     mock_load_customers: Mock,
     mock_load_events: Mock,
     mock_glue_context: GlueContext,
+    event_schema: StructType,
 ):
     spark = mock_glue_context.spark_session
     mock_load_customers.return_value = spark.createDataFrame(
@@ -114,23 +136,23 @@ def test_main_updates_customer(
                 "email": "annek@noanswer.org",
                 "_as_of": datetime.fromisoformat("2017-02-07T20:49:37.691"),
             }
-        ]
+        ],
+        event_schema
     )
     mock_load_events.return_value = spark.createDataFrame(
         [
             {
-                "payload": {
-                    "before": {},
-                    "after": {
-                        "id": 1004,
-                        "first_name": "Anne",
-                        "last_name": "Kretchmar",
-                        "email": "new@noanswer.org",
-                    },
-                    "ts_ms": 1486500588691,
-                }
+                "before": {},
+                "after": {
+                    "id": 1004,
+                    "first_name": "Anne",
+                    "last_name": "Kretchmar",
+                    "email": "new@noanswer.org",
+                },
+                "ts_ms": 1486500588691,
             }
-        ]
+        ],
+        event_schema
     )
 
     main(mock_glue_context)
@@ -162,36 +184,34 @@ def test_main_handles_new_customer_with_multiple_events(
     mock_load_events: Mock,
     mock_glue_context: GlueContext,
     empty_customer_dataframe: DataFrame,
+    event_schema: StructType,
 ):
     spark = mock_glue_context.spark_session
     mock_load_customers.return_value = empty_customer_dataframe
     mock_load_events.return_value = spark.createDataFrame(
         [
             {
-                "payload": {
-                    "before": {},
-                    "after": {
-                        "id": 1004,
-                        "first_name": "Anne",
-                        "last_name": "Kretchmar",
-                        "email": "new@noanswer.org",
-                    },
-                    "ts_ms": 1486500588691,
-                }
+                "before": {},
+                "after": {
+                    "id": 1004,
+                    "first_name": "Anne",
+                    "last_name": "Kretchmar",
+                    "email": "new@noanswer.org",
+                },
+                "ts_ms": 1486500588691,
             },
             {
-                "payload": {
-                    "before": {},
-                    "after": {
-                        "id": 1004,
-                        "first_name": "Anne",
-                        "last_name": "Kretchmar",
-                        "email": "new@noanswer.org",
-                    },
-                    "ts_ms": 1486500588691,
-                }
+                "before": {},
+                "after": {
+                    "id": 1004,
+                    "first_name": "Anne",
+                    "last_name": "Kretchmar",
+                    "email": "new@noanswer.org",
+                },
+                "ts_ms": 1486500588691,
             },
-        ]
+        ],
+        event_schema
     )
 
     main(mock_glue_context)
@@ -222,6 +242,7 @@ def test_main_removes_deleted_customer(
     mock_load_customers: Mock,
     mock_load_events: Mock,
     mock_glue_context: GlueContext,
+    event_schema: StructType,
 ):
     spark = mock_glue_context.spark_session
     mock_load_customers.return_value = spark.createDataFrame(
@@ -233,23 +254,23 @@ def test_main_removes_deleted_customer(
                 "email": "annek@noanswer.org",
                 "_as_of": datetime.fromisoformat("2017-02-07T20:49:37.691"),
             }
-        ]
+        ],
+        event_schema
     )
     mock_load_events.return_value = spark.createDataFrame(
         [
             {
-                "payload": {
-                    "before": {
-                        "id": 1004,
-                        "first_name": "Anne",
-                        "last_name": "Kretchmar",
-                        "email": "new@noanswer.org",
-                    },
-                    "after": None,
-                    "ts_ms": 1486500588691,
-                }
+                "before": {
+                    "id": 1004,
+                    "first_name": "Anne",
+                    "last_name": "Kretchmar",
+                    "email": "new@noanswer.org",
+                },
+                "after": None,
+                "ts_ms": 1486500588691,
             }
-        ]
+        ],
+        event_schema
     )
 
     main(mock_glue_context)
