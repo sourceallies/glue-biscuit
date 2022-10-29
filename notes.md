@@ -40,7 +40,7 @@
     1. Recovering from job failures and delays
     1. [Consuming event/change records into current state](./cookbook/event-change-records.md)
     1. Support "point in time" queries via Partitioning
-    1. Data modeling as a denormilized table of many columns
+    1. [Data modeling as a denormilized table of many columns](./cookbook/denormalize-data-model.md)
     1. Removing sensitive values from datasets (PII)
     1. Alerting on Job failures
     1. Cleaning up Spark staging files
