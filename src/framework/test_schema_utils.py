@@ -4,8 +4,8 @@ from framework.schema_utils import coerce_to_schema, schema_from_cloudformation,
 from unittest.mock import patch, Mock
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
-from framework.schema_utils import coerce_to_schema, source, schema
-from framework.test import DataFrameMatcher
+from framework.schema_utils import coerce_to_schema, source, schema, sink
+from framework.test import DataFrameMatcher, DynamicFrameMatcher
 from pyspark import SparkContext
 from pyspark.sql import DataFrame, Row, SparkSession
 from pyspark.sql.types import (
@@ -43,6 +43,23 @@ def mock_environ():
     os.environ["AWS_REGION"] = "us-north-5"
     yield
     os.environ["AWS_REGION"] = old_region
+
+
+@pytest.fixture
+def mock_glue_context(test_dyf: DynamicFrame, spark_context: SparkContext):
+    real_context = GlueContext(spark_context)
+    mock_context = Mock(name="GlueContext")
+    mock_context.create_dynamic_frame_from_catalog.return_value = test_dyf
+    mock_context._jvm = real_context._jvm
+    mock_context._ssql_ctx = real_context._ssql_ctx
+    return mock_context
+
+
+@pytest.fixture(autouse=True)
+def mock_glue_context_class(mock_glue_context):
+    with patch('framework.schema_utils.GlueContext') as mock_class:
+        mock_class.return_value = mock_glue_context
+        yield mock_class
 
 
 @pytest.fixture
@@ -351,11 +368,7 @@ def test_schema_coerces_data_frame_from_schema_function(test_df):
     assert test_df == DataFrameMatcher([{"x": 1}, {"x": 2}])
 
 
-@patch("framework.schema_utils.GlueContext")
-def test_source_gets_table_from_glue(mock_glue_context_class: Mock):
-    mock_glue_context = Mock(name="GlueContext")
-    mock_glue_context_class.return_value = mock_glue_context
-
+def test_source_gets_table_from_glue(mock_glue_context: Mock):
     @source(
         "some_db", "some_table", schema_obj=StructType([StructField("x", LongType())])
     )
@@ -364,21 +377,14 @@ def test_source_gets_table_from_glue(mock_glue_context_class: Mock):
 
     test_func()
 
-    mock_glue_context.assert_called_once_with(
+    mock_glue_context.create_dynamic_frame_from_catalog.assert_called_once_with(
         database="some_db",
         table_name="some_table",
         transformation_ctx="source-some_db-some_table",
     )
 
 
-@patch("framework.schema_utils.GlueContext")
-def test_source_gets_table_from_glue(
-    mock_glue_context_class: Mock, test_dyf: DynamicFrame
-):
-    mock_glue_context: DynamicFrame = Mock(name="GlueContext")
-    mock_glue_context.create_dynamic_frame_from_catalog.return_value = test_dyf
-    mock_glue_context_class.return_value = mock_glue_context
-
+def test_source_coerces_schema():
     @source(
         "some_db", "some_table", schema_obj=StructType([StructField("x", LongType())])
     )
@@ -389,3 +395,37 @@ def test_source_gets_table_from_glue(
 
     assert isinstance(result.schema["x"].dataType, LongType)
     assert result == DataFrameMatcher([{"x": 1}, {"x": 2}])
+
+
+def test_sink_writes_table_to_glue(
+    mock_glue_context: Mock,
+    test_dyf: DynamicFrame
+):
+    @sink("some_db", "some_table", schema_obj=StructType([StructField("x", LongType())]))
+    def test_func():
+        return test_dyf.toDF()
+
+    test_func()
+
+    mock_glue_context.write_dynamic_frame_from_catalog.assert_called_once_with(
+        DynamicFrameMatcher([{"x": 1}, {"x": 2}]),
+        "some_db",
+        "some_table"
+    )
+
+
+def test_sink_coerces_schema(
+    mock_glue_context: Mock,
+    test_dyf: DynamicFrame
+):
+    @sink("some_db", "some_table", schema_obj=StructType([StructField("x", StringType())]))
+    def test_func():
+        return test_dyf.toDF()
+
+    test_func()
+
+    mock_glue_context.write_dynamic_frame_from_catalog.assert_called_once_with(
+        DynamicFrameMatcher([{"x": "1"}, {"x": "2"}]),
+        "some_db",
+        "some_table"
+    )

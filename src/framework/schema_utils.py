@@ -189,3 +189,22 @@ def source(database: str, table: str, schema_obj=None, schema_func=None):
         return wrapper_func
 
     return annotation_func
+
+
+def sink(database: str, table: str, schema_obj=None, schema_func=None):
+    spark = SparkSession.builder.getOrCreate()
+    glue_context = GlueContext(spark.sparkContext)
+
+    def annotation_func(func: Callable):
+        @wraps(func)
+        def wrapper_func(*args, **kwargs):
+            df = func(*args, **kwargs)
+            final_schema = __get_schema_args(schema_obj, schema_func)
+            fitted_frame = coerce_to_schema(df, final_schema)
+            dyf = DynamicFrame.fromDF(fitted_frame, glue_context, f"sink-{database}-{table}")
+            glue_context.write_dynamic_frame_from_catalog(dyf, database, table)
+            return fitted_frame
+
+        return wrapper_func
+
+    return annotation_func
