@@ -112,11 +112,9 @@ def schema_from_cloudformation(path_to_template: str, table_name: str) -> Struct
 
 
 def schema_from_glue(database_name: str, table_name: str):
-    glue = boto3.client('glue', os.environ['AWS_REGION'])
+    glue = boto3.client("glue", os.environ["AWS_REGION"])
     res = glue.get_table(DatabaseName=database_name, Name=table_name)
-    return StructType(
-        __convert_columns(res['Table']['StorageDescriptor']['Columns'])
-    )
+    return StructType(__convert_columns(res["Table"]["StorageDescriptor"]["Columns"]))
 
 
 def __coalesce(*args):
@@ -201,7 +199,9 @@ def sink(database: str, table: str, schema_obj=None, schema_func=None):
             df = func(*args, **kwargs)
             final_schema = __get_schema_args(schema_obj, schema_func)
             fitted_frame = coerce_to_schema(df, final_schema)
-            dyf = DynamicFrame.fromDF(fitted_frame, glue_context, f"sink-{database}-{table}")
+            dyf = DynamicFrame.fromDF(
+                fitted_frame, glue_context, f"sink-{database}-{table}"
+            )
             glue_context.write_dynamic_frame_from_catalog(dyf, database, table)
             return fitted_frame
 

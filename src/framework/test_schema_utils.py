@@ -1,6 +1,10 @@
 import os
 import pytest
-from framework.schema_utils import coerce_to_schema, schema_from_cloudformation, schema_from_glue
+from framework.schema_utils import (
+    coerce_to_schema,
+    schema_from_cloudformation,
+    schema_from_glue,
+)
 from unittest.mock import patch, Mock
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
@@ -57,7 +61,7 @@ def mock_glue_context(test_dyf: DynamicFrame, spark_context: SparkContext):
 
 @pytest.fixture(autouse=True)
 def mock_glue_context_class(mock_glue_context):
-    with patch('framework.schema_utils.GlueContext') as mock_class:
+    with patch("framework.schema_utils.GlueContext") as mock_class:
         mock_class.return_value = mock_glue_context
         yield mock_class
 
@@ -77,28 +81,28 @@ def glue_response():
                     {
                         "Name": "title",
                         "Type": "string",
-                        "Comment": "Full title of this book"
+                        "Comment": "Full title of this book",
                     },
                     {
                         "Name": "publish_date",
                         "Type": "date",
-                        "Comment": "The date this book was first published"
+                        "Comment": "The date this book was first published",
                     },
                     {
                         "Name": "author_name",
                         "Type": "string",
-                        "Comment": "The full name of the author"
+                        "Comment": "The full name of the author",
                     },
                     {
                         "Name": "author_birth_date",
                         "Type": "date",
-                        "Comment": "The date the author was born"
+                        "Comment": "The date the author was born",
                     },
                     {
                         "Name": "author_id",
                         "Type": "bigint",
-                        "Comment": "Unique identifier for this author"
-                    }
+                        "Comment": "Unique identifier for this author",
+                    },
                 ],
                 "Location": "s3://glue-reference-implementation-databucket-fed75mq4rmq0/books",
                 "InputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
@@ -109,15 +113,13 @@ def glue_response():
                     "SerializationLibrary": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
                 },
                 "SortColumns": [],
-                "Parameters": {
-                    "classification": "parquet"
-                },
-                "StoredAsSubDirectories": False
+                "Parameters": {"classification": "parquet"},
+                "StoredAsSubDirectories": False,
             },
             "CreatedBy": "arn:aws:sts::144406111952:assumed-role/CognitoSAI-FederatedUserRole-3IHKNHJY8G3F/CognitoIdentityCredentials",
             "IsRegisteredWithLakeFormation": False,
             "CatalogId": "144406111952",
-            "VersionId": "2"
+            "VersionId": "2",
         }
     }
 
@@ -131,10 +133,10 @@ def mock_glue_client(glue_response):
 
 @pytest.fixture(autouse=True)
 def mock_boto3(mock_glue_client):
-    with patch('framework.schema_utils.boto3') as boto:
-        boto.client.side_effect = lambda *args, **kwargs: {
-            "glue": mock_glue_client
-        }[args[0]]
+    with patch("framework.schema_utils.boto3") as boto:
+        boto.client.side_effect = lambda *args, **kwargs: {"glue": mock_glue_client}[
+            args[0]
+        ]
         yield boto
 
 
@@ -346,14 +348,16 @@ def test_schema_from_cloudformation_parses_array_of_structs():
 
 
 def test_schema_from_glue_parses_glue_response():
-    res = schema_from_glue('some_db', 'some_table')
-    assert res == StructType([
-        StructField("title", StringType()),
-        StructField("publish_date", DateType()),
-        StructField("author_name", StringType()),
-        StructField("author_birth_date", DateType()),
-        StructField("author_id", LongType()),
-    ])
+    res = schema_from_glue("some_db", "some_table")
+    assert res == StructType(
+        [
+            StructField("title", StringType()),
+            StructField("publish_date", DateType()),
+            StructField("author_name", StringType()),
+            StructField("author_birth_date", DateType()),
+            StructField("author_id", LongType()),
+        ]
+    )
 
 
 @schema(schema_obj=StructType([StructField("x", LongType())]))
@@ -397,35 +401,29 @@ def test_source_coerces_schema():
     assert result == DataFrameMatcher([{"x": 1}, {"x": 2}])
 
 
-def test_sink_writes_table_to_glue(
-    mock_glue_context: Mock,
-    test_dyf: DynamicFrame
-):
-    @sink("some_db", "some_table", schema_obj=StructType([StructField("x", LongType())]))
+def test_sink_writes_table_to_glue(mock_glue_context: Mock, test_dyf: DynamicFrame):
+    @sink(
+        "some_db", "some_table", schema_obj=StructType([StructField("x", LongType())])
+    )
     def test_func():
         return test_dyf.toDF()
 
     test_func()
 
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_once_with(
-        DynamicFrameMatcher([{"x": 1}, {"x": 2}]),
-        "some_db",
-        "some_table"
+        DynamicFrameMatcher([{"x": 1}, {"x": 2}]), "some_db", "some_table"
     )
 
 
-def test_sink_coerces_schema(
-    mock_glue_context: Mock,
-    test_dyf: DynamicFrame
-):
-    @sink("some_db", "some_table", schema_obj=StructType([StructField("x", StringType())]))
+def test_sink_coerces_schema(mock_glue_context: Mock, test_dyf: DynamicFrame):
+    @sink(
+        "some_db", "some_table", schema_obj=StructType([StructField("x", StringType())])
+    )
     def test_func():
         return test_dyf.toDF()
 
     test_func()
 
     mock_glue_context.write_dynamic_frame_from_catalog.assert_called_once_with(
-        DynamicFrameMatcher([{"x": "1"}, {"x": "2"}]),
-        "some_db",
-        "some_table"
+        DynamicFrameMatcher([{"x": "1"}, {"x": "2"}]), "some_db", "some_table"
     )
