@@ -43,7 +43,7 @@
     1. Data modeling as a denormilized table of many columns
     1. Removing sensitive values from datasets (PII)
     1. Alerting on Job failures
-    1. Cleaning up Spark staging files
+    1. [Cleaning up Spark staging files](./cookbook/cleaning-up-spark-staging-files.md)
     1. Controlling the number of output files
     1. Creating a single file with a predictable name
     1. Improving Job Performance
