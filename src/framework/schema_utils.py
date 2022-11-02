@@ -1,4 +1,6 @@
+import os
 import re
+import boto3
 from typing import List
 from cfn_tools import load_yaml
 from awsglue import DynamicFrame
@@ -17,7 +19,6 @@ from pyspark.sql.types import (
     DecimalType,
     ArrayType,
 )
-from pyspark.sql.types import StructType
 from functools import wraps
 from typing import Callable
 
@@ -30,10 +31,6 @@ def coerce_to_schema(df: DataFrame, schema: StructType):
         result = result.withColumn(field.name, result[field.name].cast(field.dataType))
 
     return result
-
-
-def schema_from_glue():
-    pass
 
 
 def __get_glue_table(resources: dict, table_name: str):
@@ -111,6 +108,14 @@ def schema_from_cloudformation(path_to_template: str, table_name: str) -> Struct
         __convert_columns(
             table["Properties"]["TableInput"]["StorageDescriptor"]["Columns"]
         )
+    )
+
+
+def schema_from_glue(database_name: str, table_name: str):
+    glue = boto3.client('glue', os.environ['AWS_REGION'])
+    res = glue.get_table(DatabaseName=database_name, Name=table_name)
+    return StructType(
+        __convert_columns(res['Table']['StorageDescriptor']['Columns'])
     )
 
 

@@ -1,5 +1,6 @@
+import os
 import pytest
-from framework.schema_utils import coerce_to_schema, schema_from_cloudformation
+from framework.schema_utils import coerce_to_schema, schema_from_cloudformation, schema_from_glue
 from unittest.mock import patch, Mock
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
@@ -34,6 +35,90 @@ def test_df(spark_session: SparkSession) -> DataFrame:
 @pytest.fixture
 def test_dyf(test_df: DataFrame, spark_context: SparkContext) -> DataFrame:
     return DynamicFrame.fromDF(test_df, GlueContext(spark_context), "test_dyf")
+
+
+@pytest.fixture(autouse=True)
+def mock_environ():
+    old_region = os.environ.get("AWS_REGION", "")
+    os.environ["AWS_REGION"] = "us-north-5"
+    yield
+    os.environ["AWS_REGION"] = old_region
+
+
+@pytest.fixture
+def glue_response():
+    return {
+        "Table": {
+            "Name": "books",
+            "DatabaseName": "glue_reference",
+            "Description": "Books data product",
+            "CreateTime": "2022-08-11T21:55:34-05:00",
+            "UpdateTime": "2022-08-21T20:05:54-05:00",
+            "Retention": 0,
+            "StorageDescriptor": {
+                "Columns": [
+                    {
+                        "Name": "title",
+                        "Type": "string",
+                        "Comment": "Full title of this book"
+                    },
+                    {
+                        "Name": "publish_date",
+                        "Type": "date",
+                        "Comment": "The date this book was first published"
+                    },
+                    {
+                        "Name": "author_name",
+                        "Type": "string",
+                        "Comment": "The full name of the author"
+                    },
+                    {
+                        "Name": "author_birth_date",
+                        "Type": "date",
+                        "Comment": "The date the author was born"
+                    },
+                    {
+                        "Name": "author_id",
+                        "Type": "bigint",
+                        "Comment": "Unique identifier for this author"
+                    }
+                ],
+                "Location": "s3://glue-reference-implementation-databucket-fed75mq4rmq0/books",
+                "InputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
+                "OutputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
+                "Compressed": False,
+                "NumberOfBuckets": 0,
+                "SerdeInfo": {
+                    "SerializationLibrary": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+                },
+                "SortColumns": [],
+                "Parameters": {
+                    "classification": "parquet"
+                },
+                "StoredAsSubDirectories": False
+            },
+            "CreatedBy": "arn:aws:sts::144406111952:assumed-role/CognitoSAI-FederatedUserRole-3IHKNHJY8G3F/CognitoIdentityCredentials",
+            "IsRegisteredWithLakeFormation": False,
+            "CatalogId": "144406111952",
+            "VersionId": "2"
+        }
+    }
+
+
+@pytest.fixture
+def mock_glue_client(glue_response):
+    glue = Mock(name="glue_client")
+    glue.get_table.return_value = glue_response
+    yield glue
+
+
+@pytest.fixture(autouse=True)
+def mock_boto3(mock_glue_client):
+    with patch('framework.schema_utils.boto3') as boto:
+        boto.client.side_effect = lambda *args, **kwargs: {
+            "glue": mock_glue_client
+        }[args[0]]
+        yield boto
 
 
 def test_coerces_single_column(test_df: DataFrame):
@@ -241,6 +326,17 @@ def test_schema_from_cloudformation_parses_array_of_structs():
         StructField("key", StringType()),
         StructField("value", StringType()),
     ]
+
+
+def test_schema_from_glue_parses_glue_response():
+    res = schema_from_glue('some_db', 'some_table')
+    assert res == StructType([
+        StructField("title", StringType()),
+        StructField("publish_date", DateType()),
+        StructField("author_name", StringType()),
+        StructField("author_birth_date", DateType()),
+        StructField("author_id", LongType()),
+    ])
 
 
 @schema(schema_obj=StructType([StructField("x", LongType())]))
