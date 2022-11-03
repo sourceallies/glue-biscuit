@@ -1,0 +1,41 @@
+Resources:
+  TestTable:
+    Type: AWS::Glue::Table
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref Database
+      TableInput: 
+        Name: test_table
+        Description: Stores output dataset
+        StorageDescriptor:
+          Location: !Sub "s3://${DataBucket}/raw/books"
+          InputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          Parameters:
+            classification: parquet
+          Columns:
+            - Name: title
+              Type: string
+            - Name: author_age
+              Type: tinyint
+            - Name: puddles
+              Type: smallint
+            - Name: kangaroos_in_australia
+              Type: int
+            - Name: trees_in_world
+              Type: bigint
+            - Name: publish_date
+              Type: date
+            - Name: author_time
+              Type: timestamp
+            - Name: royalties_owed
+              Type: decimal(38,2)
+            - Name: pet
+              Type: struct<name:string,age:int>
+            - Name: stats
+              Type: array<int>
+            - Name: metadata
+              Type: array<struct<key:string,value:string>>
+
