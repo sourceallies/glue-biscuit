@@ -36,7 +36,7 @@
         1. Pyspark Schema
     1. Ensuring compliance with a schema
 1. Cookbook / Patterns
-    1. Reprocessing data
+    1. [Reprocessing data](./cookbook/reprocessing.md)
     1. Recovering from job failures and delays
     1. [Consuming event/change records into current state](./cookbook/event-change-records.md)
     1. Support "point in time" queries via Partitioning
@@ -48,3 +48,4 @@
     1. Creating a single file with a predictable name
     1. Improving Job Performance
     1. Only processing un-processed data
+
