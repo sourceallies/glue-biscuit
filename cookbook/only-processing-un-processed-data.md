@@ -41,3 +41,7 @@ To re-process all of the data from when job run A ran (inclusive) up until job r
 - `--job-bookmark-option job-bookmark-pause`
 - `--job-bookmark-from {job_run_id_A}`
 - `--job-bookmark-to {job_run_id_B}`
+
+## Pitfalls
+
+Bookmarks do not make your job atomic. If you write data and your job fails before calling `job.commit()`, the data is still written. This is not a replacement for making your job idempotent.
