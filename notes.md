@@ -47,5 +47,5 @@
     1. Controlling the number of output files
     1. Creating a single file with a predictable name
     1. Improving Job Performance
-    1. Only processing un-processed data
+    1. [Only processing un-processed data](./cookbook/only-processing-un-processed-data.md)
 
