@@ -3,6 +3,7 @@ import pytest
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from glue_biscuit.test.dynamic_frame_matcher import DynamicFrameMatcher
+from glue_biscuit.test import mock_glue_context
 
 
 @pytest.fixture()

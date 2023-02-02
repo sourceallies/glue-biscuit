@@ -17,6 +17,7 @@ from glue_biscuit.test import (
 from customer_events.process_customer_events import (
     main,
 )
+from glue_biscuit.test import mock_glue_context, spark_context
 
 
 @pytest.fixture
