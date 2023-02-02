@@ -4,7 +4,7 @@ version = "GH_TAG_NAME"
 description = ""
 authors = ["Gene Tinderholm <gtinderholm@sourceallies.com>", "Paul Rowe <prowe@sourceallies.com"]
 readme = "README"
-packages = [{include = "framework", from = "./src"}]
+packages = [{include = "glue_biscuit", from = "./src"}]
 
 [tool.poetry.dependencies]
 python = "^3.7"
