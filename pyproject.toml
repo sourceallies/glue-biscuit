@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "glue-biscuit"
-version = "0.1.0"
+version = "GH_TAG_NAME"
 description = ""
 authors = ["Gene Tinderholm <gtinderholm@sourceallies.com>", "Paul Rowe <prowe@sourceallies.com"]
 readme = "README"
