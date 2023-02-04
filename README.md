@@ -1,5 +1,7 @@
 # Glue Biscuit
 
+[![Source Allies Logo](./doc_support/source-allies-logo-final.png)](https://sourceallies.com)
+
 ## Table of Contents
 
 1. [Introduction](#introduction)
