@@ -8,23 +8,16 @@ from pyspark.sql.types import (
     TimestampType,
     IntegerType,
     LongType,
-    MapType,
 )
-from awsglue.context import GlueContext
-from unittest.mock import patch, Mock, call, ANY
+from unittest.mock import patch, Mock
 import pytest
-from framework.test import (
+from glue_biscuit.test import (
     DataFrameMatcher,
-    DynamicFrameMatcher,
-    spark_context,
-    mock_glue_context,
 )
 from customer_events.process_customer_events import (
     main,
-    load_events,
-    load_customers,
-    save_customers,
 )
+from glue_biscuit.test import mock_glue_context, spark_context
 
 
 @pytest.fixture

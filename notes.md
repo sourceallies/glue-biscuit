@@ -39,7 +39,7 @@
     1. [Reprocessing data](./cookbook/reprocessing.md)
     1. Recovering from job failures and delays
     1. [Consuming event/change records into current state](./cookbook/event-change-records.md)
-    1. Support "point in time" queries via Partitioning
+    1. [Support "point in time" queries via Partitioning](./cookbook/point-in-time-queries.md)
     1. [Data modeling as a denormilized table of many columns](./cookbook/denormalize-data-model.md)
     1. [Removing sensitive values from datasets (PII)](./cookbook/removing-sensitive-values.md)
     1. Alerting on Job failures
@@ -47,5 +47,5 @@
     1. Controlling the number of output files
     1. Creating a single file with a predictable name
     1. Improving Job Performance
-    1. Only processing un-processed data
+    1. [Only processing un-processed data](./cookbook/only-processing-un-processed-data.md)
 
