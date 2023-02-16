@@ -1,15 +1,17 @@
 import os
 import pytest
-from framework.schema_utils import (
+from glue_biscuit.schema_utils import (
     coerce_to_schema,
     schema_from_cloudformation,
     schema_from_glue,
+    source,
+    schema,
+    sink,
 )
 from unittest.mock import patch, Mock
 from awsglue import DynamicFrame
 from awsglue.context import GlueContext
-from framework.schema_utils import coerce_to_schema, source, schema, sink
-from framework.test import DataFrameMatcher, DynamicFrameMatcher
+from glue_biscuit.test import DataFrameMatcher, DynamicFrameMatcher
 from pyspark import SparkContext
 from pyspark.sql import DataFrame, Row, SparkSession
 from pyspark.sql.types import (
@@ -61,7 +63,7 @@ def mock_glue_context(test_dyf: DynamicFrame, spark_context: SparkContext):
 
 @pytest.fixture(autouse=True)
 def mock_glue_context_class(mock_glue_context):
-    with patch("framework.schema_utils.GlueContext") as mock_class:
+    with patch("glue_biscuit.schema_utils.GlueContext") as mock_class:
         mock_class.return_value = mock_glue_context
         yield mock_class
 
@@ -133,7 +135,7 @@ def mock_glue_client(glue_response):
 
 @pytest.fixture(autouse=True)
 def mock_boto3(mock_glue_client):
-    with patch("framework.schema_utils.boto3") as boto:
+    with patch("glue_biscuit.schema_utils.boto3") as boto:
         boto.client.side_effect = lambda *args, **kwargs: {"glue": mock_glue_client}[
             args[0]
         ]

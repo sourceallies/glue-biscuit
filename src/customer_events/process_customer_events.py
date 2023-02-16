@@ -3,7 +3,7 @@ from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import coalesce, when, isnull, lit
 from datetime import datetime
-from framework import merge_and_retain_last
+from glue_biscuit import merge_and_retain_last
 
 
 def load_events(glue_context: GlueContext) -> DataFrame:

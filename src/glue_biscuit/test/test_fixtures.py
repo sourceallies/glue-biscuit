@@ -1,8 +1,7 @@
 import pytest
 from awsglue.context import GlueContext
 from unittest.mock import Mock
-
-from framework.test.fixtures import spark_context, mock_glue_context
+from glue_biscuit.test import mock_glue_context
 
 
 def test_mock_glue_context_is_correct_type(mock_glue_context: GlueContext):
