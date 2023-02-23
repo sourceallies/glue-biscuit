@@ -23,15 +23,14 @@ It extends Spark with additional capabilities that are specific to the AWS ecosy
 
 The use cases for this service can be broken down into two broad catagories:
 
-The first is someone wanting to do ad-hoc analysis.
-Or, a team may need to do some manaual wrangling of data before loading it into a system.
+The first is ad-hoc and manual use of Glue for analysis or to do wrangling of data before loading into a system.
 These uses are successful because there is a human that is able to look at the output and use their judgement to modify the code on the fly to produce the desired results.
 
 The other involves using Glue as part of a production data pipeline.
-Glue Jobs are expected to run un-attended, reliably, and accuratly.
-Error in the output of these jobs can have subtle but catistrophic effects on downstream systems.
+In this use case Glue Jobs are expected to run un-attended, reliably, and accurately.
+Error in the output of these jobs can have subtle but catastrophic effects on downstream systems.
 Depending on the results, these errors may not be noticed for several days or weeks.
-These jobs may also be very complicated and need to handle many different data scenerios.
+These jobs may also be very complicated and need to handle many different data scenarios.
 
 In this second class of use cases, Glue jobs are no longer one-off scripts, but rather software applications.
 Therefore, we need to apply a software engineering process.
@@ -40,26 +39,26 @@ It includes a companion library to help software teams achieve these goals.
 
 This guide assumes the reader has:
 - A general understanding of Python
-- Familiarity with AWS and the common services (IAM, S3, Cloudformation)
-- Created a basic Glue job. Possibly as part of a tutorial
-- The concepts of a Continuious Deployment pipeline and why they are used within software development
+- Familiarity with AWS and the common services (IAM, S3, CloudFormation)
+- Created a basic Glue job, possibly as part of a tutorial
+- An understanding of the concept of a Continuous Deployment pipeline and why they are used within software development
 - Familiarity with automated unit testing
 
 ## Glue Job Structure
 
 In Glue, a job is a Python file and associated configuration that can be executed within AWS.
-If a job is created via the Glue Console using a template, or a tutorial is followed then the resulting Python file is usually a simple script that follows a top down progression of execution in this order:
+If a job is created via a template in the Glue Console or a tutorial then the resulting Python file is usually a simple script that follows a top-down progression of execution in this order:
 1. Import statements
 2. Create a `SparkSession`, `GlueContext`, and possibly `Job` objects
-3. Call one of the `GlueContext.create_dynamic_frame_*` methods
-4. Call various `DyanmicFrame` or `DataFrame` methods to transform the data
+3. Call one of the `GlueContext.create_dynamic_frame_*` methods to read data
+4. Call various `DynamicFrame` or `DataFrame` methods to transform the data
 5. Write out the results using one of the `GlueContext.write_dynamic_frame*` methods
 6. Optionally, commit the `Job` if using bookmarks
 
 This structure creates some friction as the job evolves.
-In order to ensure that this job does not produce invalid results, we need a way of testing it. 
-If a unit test is written and attempts to import this file, the job will immeditaly begin executing.
-This does not allow an opportunity for data to be mocked or for the job to be run multiple times in various scenerios.
+In order to ensure that this job does not produce invalid results, we need a way of testing it.
+If a unit test is written and attempts to import this file, the job will immediately begin executing.
+This does not allow an opportunity for data to be mocked or for the job to be run multiple times in various scenarios.
 To address this limitation, we give up the testing of a small piece of the job.
 Specifically, the creation of the `SparkSession` and `GlueContext`
 We do this by wrapping the entire job into a function and calling it only when the script is the entrypoint of execution.
@@ -77,10 +76,10 @@ if __name__ == "__main__":
     main(glue_context)
 ```
 
-As the jobs grow into more realistic levels of complexity, they need to read from multiple sources, do various operations and save data to possibly multiple destinations.
-There are also opportunities to extract out boilerplate, cross cutting, functionality that is not specific to a job.
+Realistically, Glue jobs grow more complex and will potentially need to read from multiple sources, do various operations and save data multiple destinations.
+There are also opportunities to extract out boilerplate, cross-cutting functionality that is not specific to a job.
 In order to make the job more scalable, we further break down the `main` function into three categories of functions:
-1. **Data Sources**: These take the form of `def load_something(glue_context: GlueContext) -> DataFrame:`. 
+1. **Data Sources**: These take the form of `def load_something(glue_context: GlueContext) -> DataFrame:`.
     These functions should just determine the parameters needed and load data into a Spark `DataFrame`, not do any processing. 
     We want to create a distinct function for each `DataFrame` we want to load.
 2. **Data Sinks**: These take the form of `def save_something(some_data: DataFrame, glue_context: GlueContext):`. 
@@ -89,22 +88,21 @@ In order to make the job more scalable, we further break down the `main` functio
 3. **Main**: This is the coordinator for the job.
     It should call the Data Sources to get data, process it and then call the Data Sinks as needed.
     Following the premises of clean code, private helper functions should be pulled out and added as needed in order to keep the job maintainable and understandable.
-    The sign of a well designed job is when the Main method reads like a high level flow chart of how the job executes.
+    The sign of a well-designed job is when the Main method reads like a high level flow chart of how the job executes.
 
-By breaking the job down, We can now independently test each Data Source function is loading data from the correct place, with the correct parameters.
+By breaking the job down, we can now independently test that each Data Source function is loading data from the correct place with the correct parameters.
 We can then test that the Data Sinks will call the appropriate Glue APIs correctly.
 Given that the Sources and Sinks are tested as correct, they can be mocked out when testing the main function.
-This mocking allows the test cases to provide different inputs to the job and execute all the code paths and testing scenerios of the main function.
+This mocking allows the test cases to provide different inputs to the job and execute all the code paths and testing scenarios of the main function.
 
 ## Testing
 
 ### Unit Testing
 
-In order to Unit Test Glue jobs, we recommend trying to execute as much of the Glue and Spark code as possible. 
+In order to unit test Glue jobs, we recommend trying to execute as much of the Glue and Spark code as possible. 
 This is because most real world jobs are highly dependent on using various Spark methods in order to perform their task.
-If we were to mock these methods and only test the code that is physically in the job file then we would be relying on many assumtpions about the behavior of Spark. 
-In addtion, our tests would be very tightly coupled to the implementation of the job.
-Making the tests brittle as the job evolves over time.
+If we were to mock these methods and only test the code that is physically in the job file then we would be relying on many assumptions about the behavior of Spark. 
+In addition, our tests would be very tightly coupled to the implementation of the job, making the tests brittle as the job evolves over time.
 
 We test each source, sink, and the main method individually.
 
@@ -113,8 +111,8 @@ In order to test the source methods, we need to provide it an implementation of 
 The `framework.test` module provides a `mock_glue_context` fixture that can be imported and referenced.
 
 Most source methods also use job arguments for various runtime parameters. 
-The Glue provided `getResolvedOptions` can be mocked, however this method is tricky to mock and actually pretty inconvient to use. 
-Instead, we recommend using the framework provided `get_job_argument` or `get_job_arguments` functions. 
+The Glue provided `getResolvedOptions` can be mocked, however this method is tricky to mock and inconvenient to use. 
+Instead, we recommend using the framework-provided `get_job_argument` or `get_job_arguments` functions. 
 The `get_job_argument` function takes a string and returns the value of that argument. 
 The plural form `get_job_arguments` takes any number of argument names as parameters and returns a tuple with the values in order.
 We can then simply mock one of these methods and return the appropriate value.
@@ -193,8 +191,8 @@ They are, by design, very simple functions and mostly serve to hide the specific
 They also allow us to individually mock them and return different values when testing the main method.
 Without these functions we would have to mock `GlueContext.create_dynamic_frame_from_options` and dynamically return different test data for each invocation.
 
-The sink tests needed to asser the correct DyanmicFrame was passed to Glue.
-The main function tests will need to asser that the correct DataFrame was passed to the sinks.
+The sink tests needed to assert the correct DynamicFrame was passed to Glue.
+The main function tests will need to assert that the correct DataFrame was passed to the sinks.
 For this purpose the framework provides the `DataFrameMatcher` class.
 
 Here is a simple example of a test that mocks two sources and a sink and then tests the main method properly joins a single row.
@@ -241,7 +239,7 @@ With these basics in place, test files can iterate on different inputs to the ma
 Pytest fixtures can be extracted as needed to create test `DataFrame`s
 
 In order to execute these tests, Glue, Pyspark, and Pytest all must be present. 
-Fortunatly there is a Docker image provided by AWS that contains a full Glue runtime.
+Fortunately there is a Docker image provided by AWS that contains a full Glue runtime.
 We can simply launch this container and use it to execute tests like so:
 
 ```bash
@@ -282,9 +280,10 @@ final_df = build_partition(df)
 write_output_data(final_df)
 delete_files_before(job_start)
 ```
+
 #### Partitioning
 
-Care should be taken when designing the data lake to design partitions that limit the blast radius of the reprocessing of the reprocessing of any partitions. Analyze access patterns and potential damage a malformed event could cause when processed by the data lake. A good rule of thumb is that a bad event should only cause the reprocessing of a single partition in the silver layer, and only one partition in each curated data product within the gold layer. This will reduce cost and time when recovering from a bad event.
+Care should be taken when designing the data lake to design partitions that limit the blast radius of the reprocessing of any partitions. Analyze access patterns and potential damage a malformed event could cause when processed by the data lake. A good rule of thumb is that a bad event should only cause the reprocessing of a single partition in the silver layer, and only one partition in each curated data product within the gold layer. This will reduce cost and time when recovering from a bad event.
 
 #### Idempotency
 
@@ -315,18 +314,18 @@ There are several corner cases that have to be handled properly in order for thi
 In order to support this pattern, both input and target records must satisfy a couple criteria:
 - Each record must have a set of columns that uniquely identify the entity that is being manipulated. This is typically the columns that are the primary key in the source.
 - Each record must have a timestamp that orders the mutations.
-- Opitonally, to support deletes, each record needs a way to identify that it is a delete.
+- Optionally, to support deletes, each record needs a way to identify that it is a delete.
 
 This is the logical algorithm to process this data:
-1. New records are loaded from the source (usually via a Bookmark)
+1. New records are loaded from the source (usually via a Job Bookmark).
 1. Source events are converted into the target structure. As part of this conversion, populate an `effective_date` column with the event time and a `_deleted` flag with `true` if the event represents a deletion and `false` otherwise.
 1. Load the current target dataset.
-1. Add a `_deleted` column to the target with a value of `false`
-1. Union the source and target
+1. Add a `_deleted` column to the target with a value of `false`.
+1. Union the source and target.
 1. Execute a group-by on the primary key columns.
 1. For each group, reduce the group by selecting the record with the largest timestamp (most current record). 
-1. This resulting dataset now has exactly one record per entity
-1. Filter out any records with a `_deleted` flag that is `true`
+1. This resulting dataset now has exactly one record per entity.
+1. Filter out any records with a `_deleted` flag that is `true`.
 1. Drop the `_deleted` column.
 1. Write out the output to the target.
 1. Purge data from the target that existed prior to the job run.
@@ -336,33 +335,33 @@ In order to help with the execution of the above algorithm, we provide a [merge_
 ### Support "point in time" queries via Partitioning
 
 Many times, users have the need to query data as it existed historically.
-In traditional data warehoused, this was often implemetned as "effectve" and "term" dates. 
+In traditional data warehouses, this was often implemented as "effective" and "term" dates. 
 These dates were added to `where` clauses in order to restrict the rows returned to only those effective at the desired time.
 When loading data, existing records are "termed" and records with the current state are inserted with new effective dates.
 
 Within a data lake that is backed by files in S3, this architecture creates two problems:
 During a load process, we cannot simply update individual records in S3, instead, entire files must be re-written.
-Since AWS Glue and other technologies that read from the data lake do not support indexes in the traditional sense, they cannot effectivly filter out records that are not current without scanning all the data in the lake. 
+Since AWS Glue and other technologies that read from the data lake do not support indexes in the traditional sense, they cannot effectively filter out records that are not current without scanning all the data in the lake. 
 
 Rather than using effective and term dates, we can instead decide on a "granularity" and then create a partition for each value of that granularity.
 For example, if we need to query data by month, we would create a partition for each month and load an entire copy of the data into this partition. 
-This creates a copy of the entire dataset every month, but since Parquet files are highly space-efficent and S3 storage is very cheap this is not a concern.
-When users want to run a point in time query, they simply specify the partion for the month of conern.
+This creates a copy of the entire dataset every month, but since Parquet files are highly space-efficient and S3 storage is very cheap this is not a concern.
+When users want to run a point in time query, they simply specify the partition for the month of concern.
 
 The general strategy for loading data is as follows:
-1. Union the incomming data, the data for the previous partition, and the current partition.
+1. Union the incoming data, the data for the previous partition, and the current partition.
 1. For each unique key, retain the most recent record
 1. Drop any records that have delete markers
 1. Write back out the current partition
 1. Purge any old files from the current partition (prior to the job start).
 
-If the definition of "current" is not based on injestion time, but rather some sort of business date (ex. order date, activation date, etc) then the above process is more complicated.
+If the definition of "current" is not based on ingestion time, but rather some sort of business date (ex. order date, activation date, etc) then the above process is more complicated.
 1. As incoming data is processed, the earliest affected partition needs to be identified. 
-1. The incomind data that is effective during that window can be merged into that partition and the partition is rebuilt. 
+1. The incoming data that is effective during that window can be merged into that partition and the partition is rebuilt.
 1. The data then needs to be "rolled forward" into the next partition.
-1. This process is repeated for each partition until the current partion is reached.
+1. This process is repeated for each partition until the current partition is reached.
 
-### Data modeling as a denormilized table of many columns
+### Data modeling as a denormalized table of many columns
 
 
 A common use for AWS Glue is to process data within a Data Lake environment.
@@ -371,10 +370,10 @@ For teams that are used to working with the Dimensional or Snowflakes of a data 
 This would take the form of a table within the Glue catalog for each entity and relationship.
 We recommend against this.
 
-The constraints within a S3, Parquet based lake are not the same as those on a relational database.
+The constraints within a S3, Parquet-based lake are not the same as those on a relational database.
 - Joins are expensive
 - Individual rows cannot be updated. Instead, entire partitions are rewritten or appended to.
-- A large amount of data can be scaned in one pass.
+- A large amount of data can be scanned in one pass.
 - Parquet files automatically de-duplicate and compress data.
 
 Start the data modeling with a "Data Product".
@@ -391,14 +390,14 @@ If this was a data warehouse, additional tables (i.e. dimensions) would be creat
 The argument is that this data is "duplicated" across all the policies and needs to be held in a table of its own. 
 In this model, we would instead continue to add columns to the `Payments` table. 
 The data would be duplicated through each payment. 
-So if a policy holder made 100 pyaments, then yes, the name, address, phone number, etc would be duplicated 100 times.
+So if a policy holder made 100 payments, then yes, the name, address, phone number, etc would be duplicated 100 times.
 
 There may also be source data where there are multiple values per row.
 If this is the case (like a `label` field that could be 0 - many strings) then the team should consider the various data structure types supported by Parquet as well as Glue and Athena. 
 Unlike a relational database, there is no indexing advantage to putting a list of strings in a separate table, instead, if it is stored as an `array<string>` column then it can be queried just like any other column and the user is not forced to join it to a parent table to produce useful data.
 
-The kneejerk reaction to this is that it is a "bad" design because of all this duplication and that it would cause a lot of wasted space, performance problems, data correctness issues, etc.
-Infact, this design makes the Data Lake both simpler to build and faster to use. 
+The knee-jerk reaction to this is that it is a "bad" design because of all this duplication and that it would cause a lot of wasted space, performance problems, data correctness issues, etc.
+In fact, this design makes the Data Lake both simpler to build and faster to use. 
 - Parquet will automatically deduplicate column values within itself. 
     This means that it doesn't matter if we store the same name 100s of times, the actual space will be far less. 
 - This "wide table" strategy also simplifies the process of loading data: 
@@ -406,12 +405,12 @@ Infact, this design makes the Data Lake both simpler to build and faster to use.
 - Data is easier to reason about:
     Users don't have to know what columns to join on and make sure join criteria are correct to prevent issues.
     They can simply query the table and group or filter by any available columns.
-- With mutliple table, some data could be loaded into one table while other tables have not yet been loaded or their loads failed.
+- With multiple tables, some data could be loaded into one table while other tables have not yet been loaded or their loads failed.
 
 There is a limit to this setup. 
 The table can have hundreds, but probably not thousands of columns. 
 There should be some consideration for the users and use cases for the data. 
-Where a traditional Data Warehouse has "Data Marts" that are copies of data for different audiances, a Data Lake can also have different tables that are focused on different use cases where needed. 
+Where a traditional Data Warehouse has "Data Marts" that are copies of data for different audiences, a Data Lake can also have different tables that are focused on different use cases where needed. 
 This does not remove the need to sometimes have other tables at different grains.
 In our example there is still probably going to be a `PolicyHolders` table that has one row per customer.
 An important distinction is that these two tables are fully independent and not tied together like in a Dimensional or Snowflake design.
@@ -442,7 +441,7 @@ An example lifecycle policy to permanently delete Spark staging files:
 
 During the creation of a data lake, you *will* make mistakes. At some point you're going to have to re-process some amount of data. Doing this without re-processing the entire dataset is an important feature of building a well performing data lake.
 
-The important feature for this in Glue is "bookmarks". Bookmarks allow you to keep track of what data has already been processed, and to re-run jobs with a subset of the complete dataset.
+The important feature for this in Glue is "Bookmarks". Bookmarks allow you to keep track of what data has already been processed, and to re-run jobs with a subset of the complete dataset.
 
 #### Job Creation
 
