@@ -3,7 +3,7 @@ name = "glue-biscuit"
 version = "GH_TAG_NAME"
 description = ""
 authors = ["Gene Tinderholm <gtinderholm@sourceallies.com>", "Paul Rowe <prowe@sourceallies.com"]
-readme = "README"
+readme = "README.md"
 packages = [{include = "glue_biscuit", from = "./src"}]
 
 [tool.poetry.dependencies]
