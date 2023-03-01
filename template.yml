@@ -1,5 +1,5 @@
 Transform: AWS::Serverless-2016-10-31
-Description: Eample glue project to demonstrate the reference implementation https://github.com/sourceallies/glue-reference-implementation
+Description: Eample glue project to demonstrate the reference implementation https://github.com/sourceallies/glue-biscuit
 
 Parameters:
   GitHash:

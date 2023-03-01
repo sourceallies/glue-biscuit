@@ -12,7 +12,7 @@
     1. [Reprocessing data](#reprocessing-data)
     1. [Consuming event/change records into current state](#consuming-eventchange-records-into-current-state)
     1. [Support "point in time" queries via Partitioning](#support-point-in-time-queries-via-partitioning)
-    1. [Data modeling as a denormilized table of many columns](#data-modeling-as-a-denormilized-table-of-many-columns)
+    1. [Data modeling as a denormalized table of many columns](#data-modeling-as-a-denormalized-table-of-many-columns)
     1. [Cleaning up Spark staging files](#cleaning-up-spark-staging-files)
     1. [Only processing un-processed data](#only-processing-un-processed-data)
 

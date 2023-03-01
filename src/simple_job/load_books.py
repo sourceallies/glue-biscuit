@@ -5,7 +5,7 @@ from glue_biscuit import get_job_arguments
 from pyspark.sql.functions import to_date, col
 
 
-#  TODO: how do we ensure this returns the expected strucure
+#  TODO: how do we ensure this returns the expected structure
 #  TODO: can we create a @cached decorator that will store the result if it is called multiple times
 def load_books(glue_context: GlueContext) -> DataFrame:
     (bucket_name,) = get_job_arguments("source_bucket")
@@ -18,7 +18,7 @@ def load_books(glue_context: GlueContext) -> DataFrame:
     ).toDF()
 
 
-# TODO: how do we ensure this saves the expected strucure
+# TODO: how do we ensure this saves the expected structure
 def save_books(books: DataFrame, glue_context: GlueContext):
     glue_context.purge_table(
         "glue_reference", "raw_books", options={"retentionPeriod": 0}
@@ -32,7 +32,7 @@ def main(glue_context: GlueContext):
     books = load_books(glue_context)
     converted = books.select(
         "title",
-        # G/P talked about ways to ensure structure of output. Protect agienst misnaming columns
+        # G/P talked about ways to ensure structure of output. Protect against misnaming columns
         to_date(col("publish_date"), "yyyy-MM-dd").alias("publish_date"),
         col("author").alias("author_name"),
     )

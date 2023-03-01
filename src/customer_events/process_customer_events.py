@@ -1,7 +1,6 @@
-from awsglue import DynamicFrame
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import coalesce, when, isnull, lit
+from pyspark.sql.functions import coalesce, when, isnull
 from datetime import datetime
 from glue_biscuit import merge_and_retain_last
 
