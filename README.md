@@ -5,6 +5,7 @@
 ## Table of Contents
 
 1. [Introduction](#introduction)
+1. [Installation](#installation)
 1. [Glue Job Structure](#glue-job-structure)
 1. [Testing](#testing)
     1. [Unit Testing](#unit-testing)
@@ -43,6 +44,14 @@ This guide assumes the reader has:
 - Created a basic Glue job, possibly as part of a tutorial
 - An understanding of the concept of a Continuous Deployment pipeline and why they are used within software development
 - Familiarity with automated unit testing
+
+## Installation 
+
+To install this package, run the following command from a terminal:
+
+```sh
+pip install glue_biscuit
+```
 
 ## Glue Job Structure
 
