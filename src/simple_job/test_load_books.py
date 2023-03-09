@@ -1,8 +1,6 @@
 from datetime import date
 from pyspark.sql import DataFrame
 from awsglue.context import GlueContext
-from pyspark.sql import DataFrame
-from awsglue.context import GlueContext
 from unittest.mock import patch, Mock, call, ANY
 from glue_biscuit.test import (
     DataFrameMatcher,
@@ -10,7 +8,14 @@ from glue_biscuit.test import (
     spark_context,
     mock_glue_context,
 )
+import pytest
 from simple_job.load_books import main, load_books, save_books
+
+
+@pytest.fixture(autouse=True)
+def mock_sink():
+    with patch("simple_job.load_books.sink") as mock_sink_func:
+        yield mock_sink_func
 
 
 @patch("simple_job.load_books.get_job_arguments")
