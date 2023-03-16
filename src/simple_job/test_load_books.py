@@ -16,7 +16,9 @@ from simple_job.load_books import main, load_books, save_books
 @pytest.fixture(autouse=True)
 def mock_schema_from_glue():
     with patch("simple_job.load_books.schema_from_glue") as mock_sink_func:
-        mock_sink_func.side_effect = lambda *args: schema_from_cloudformation('./template.yml', args[1])
+        mock_sink_func.side_effect = lambda *args: schema_from_cloudformation(
+            "./template.yml", args[1]
+        )
         yield mock_sink_func
 
 

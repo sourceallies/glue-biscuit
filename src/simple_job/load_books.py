@@ -18,7 +18,11 @@ def load_books(glue_context: GlueContext) -> DataFrame:
     ).toDF()
 
 
-@sink('glue_reference', 'raw_books', lambda: schema_from_glue('glue_reference', 'raw_books'))
+@sink(
+    "glue_reference",
+    "raw_books",
+    lambda: schema_from_glue("glue_reference", "raw_books"),
+)
 def save_books(books: DataFrame, glue_context: GlueContext):
     glue_context.purge_table(
         "glue_reference", "raw_books", options={"retentionPeriod": 0}
@@ -26,11 +30,15 @@ def save_books(books: DataFrame, glue_context: GlueContext):
     return books
 
 
-@schema(schema_obj=StructType([
-    StructField("title", StringType()),
-    StructField("publish_date", StringType()),
-    StructField("author", StringType()),
-]))
+@schema(
+    schema_obj=StructType(
+        [
+            StructField("title", StringType()),
+            StructField("publish_date", StringType()),
+            StructField("author", StringType()),
+        ]
+    )
+)
 def transform_books(books: DataFrame) -> DataFrame:
     return books.select(
         "title",
