@@ -62,13 +62,6 @@ def mock_glue_context(test_dyf: DynamicFrame, spark_context: SparkContext):
     return mock_context
 
 
-# @pytest.fixture(autouse=True)
-# def mock_glue_context_class(mock_glue_context):
-#     with patch("glue_biscuit.schema_utils.GlueContext") as mock_class:
-#         mock_class.return_value = mock_glue_context
-#         yield mock_class
-
-
 @pytest.fixture
 def glue_response():
     return {
