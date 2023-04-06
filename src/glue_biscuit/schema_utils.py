@@ -165,12 +165,10 @@ def schema(*, schema_obj=None, schema_func=None):
 
 
 def source(database: str, table: str, schema_obj=None, schema_func=None):
-    spark = SparkSession.builder.getOrCreate()
-    glue_context = GlueContext(spark.sparkContext)
-
     def annotation_func(func: Callable):
         @wraps(func)
         def wrapper_func(*args, **kwargs):
+            glue_context = __find_glue_context(*args, **kwargs)
             final_schema = __get_schema_args(schema_obj, schema_func)
             dyn_frame = glue_context.create_dynamic_frame_from_catalog(
                 database=database,
@@ -182,20 +180,27 @@ def source(database: str, table: str, schema_obj=None, schema_func=None):
             # Do we want to assume this is right here,
             # or do we want to do crazy reflection magic
             # to figure out a keyword arg? Both?
-            return func(fitted_frame, *kwargs, **kwargs)
+            return func(fitted_frame, *args, **kwargs)
 
         return wrapper_func
 
     return annotation_func
 
 
-def sink(database: str, table: str, schema_obj=None, schema_func=None):
-    spark = SparkSession.builder.getOrCreate()
-    glue_context = GlueContext(spark.sparkContext)
+def __find_glue_context(*args, **kwargs) -> GlueContext:
+    for arg in args:
+        if isinstance(arg, GlueContext):
+            return arg
+    for k, arg in kwargs:
+        if isinstance(arg, GlueContext):
+            return arg
 
+
+def sink(database: str, table: str, schema_obj=None, schema_func=None):
     def annotation_func(func: Callable):
         @wraps(func)
         def wrapper_func(*args, **kwargs):
+            glue_context = __find_glue_context(*args, **kwargs)
             df = func(*args, **kwargs)
             final_schema = __get_schema_args(schema_obj, schema_func)
             fitted_frame = coerce_to_schema(df, final_schema)
