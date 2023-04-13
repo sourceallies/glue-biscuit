@@ -22,7 +22,7 @@
 AWS Glue provides a serverless runtime for Apache Spark. 
 It extends Spark with additional capabilities that are specific to the AWS ecosystem.
 
-The use cases for this service can be broken down into two broad catagories:
+The use cases for this service can be broken down into two broad categories:
 
 The first is ad-hoc and manual use of Glue for analysis or to do wrangling of data before loading into a system.
 These uses are successful because there is a human that is able to look at the output and use their judgement to modify the code on the fly to produce the desired results.
